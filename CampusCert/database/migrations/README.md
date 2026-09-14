@@ -1,0 +1,3 @@
+-- Migrations go here, one file per change, sequentially numbered.
+-- e.g. 0001_init.sql, 0002_add_exam_events.sql
+-- Owned by Member 1 — open a PR here for any schema change and tag them.
