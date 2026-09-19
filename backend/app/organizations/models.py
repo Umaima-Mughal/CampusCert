@@ -6,7 +6,6 @@ Users belong to an Organization (see app/auth/models.py -> organization_id).
 """
 
 from sqlalchemy import Column, String, Boolean
-from sqlalchemy.orm import relationship
 from app.core.base_model import BaseModel
 
 
