@@ -59,7 +59,7 @@ not by the folder owner — see **Review rotation** below.
 | `frontend/src/shared/` | **Member 1** | Design-system components, layout — **shared, coordinate before editing** |
 | `frontend/src/api/` | **Member 1** | API client — **shared; add your module's calls in your own file inside this folder, don't edit someone else's** |
 | `docs/` | **whoever owns that topic** | Keep each doc page next to the module it documents |
-| `.github/`, root config files | **Member 1** | CI, templates, `.gitignore`, `.env.example` |
+| `.github/`, root config files | **Anyone can do this** | CI, templates, `.gitignore`, `.env.example` |
 
 ### The three rules that actually prevent merge conflicts
 
