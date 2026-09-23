@@ -1,4 +1,3 @@
-
 """
 app/auth/schemas.py
 

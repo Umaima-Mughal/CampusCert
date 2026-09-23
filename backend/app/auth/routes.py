@@ -1,4 +1,3 @@
-
 """
 app/auth/routes.py
 
