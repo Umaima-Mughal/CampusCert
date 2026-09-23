@@ -1,3 +1,4 @@
+
 /**
  * src/auth/LoginPage.jsx
  *
@@ -8,7 +9,7 @@
  */
 
 import { useState } from "react";
-import { loginUser, getCurrentUser } from "../api/auth";
+import { loginUser, getCurrentUser, logoutUser } from "../api/auth";
 import { useAuth } from "./AuthContext";
 
 const ROLE_TABS = [
@@ -34,6 +35,20 @@ export default function LoginPage({ onNavigateToRegister, onLoginSuccess }) {
     try {
       await loginUser({ email, password });
       const me = await getCurrentUser();
+
+      // The tab the user picked (Student / Examiner / Admin) must match
+      // the role that's actually on their account, or we bail out and
+      // don't let them into the wrong portal.
+      if (me.role !== activeTab) {
+        logoutUser();
+        const pickedLabel = roleLabel;
+        const actualLabel = ROLE_TABS.find((t) => t.key === me.role)?.label || me.role;
+        setError(
+          `This account is registered as ${actualLabel}, not ${pickedLabel}. Select the ${actualLabel} tab to log in.`
+        );
+        return;
+      }
+
       setUser(me);
       onLoginSuccess?.(me);
     } catch (err) {

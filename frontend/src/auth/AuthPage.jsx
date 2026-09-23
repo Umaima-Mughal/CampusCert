@@ -7,7 +7,7 @@
  */
 
 import { useState } from "react";
-import { loginUser, registerUser, getCurrentUser } from "../api/auth";
+import { loginUser, registerUser, getCurrentUser, logoutUser } from "../api/auth";
 import { useAuth } from "./AuthContext";
 
 export default function AuthPage({ initialMode = "login", onAuthSuccess }) {
@@ -42,6 +42,20 @@ export default function AuthPage({ initialMode = "login", onAuthSuccess }) {
     try {
       await loginUser({ email, password });
       const me = await getCurrentUser();
+
+      // The tab the user picked (Student / Examiner / Admin) must match
+      // the role that's actually on their account, or we bail out and
+      // don't let them into the wrong portal.
+      if (me.role !== activeRole) {
+        logoutUser();
+        const pickedLabel = ROLE_TABS.find((t) => t.key === activeRole)?.label || activeRole;
+        const actualLabel = ROLE_TABS.find((t) => t.key === me.role)?.label || me.role;
+        setError(
+          `This account is registered as ${actualLabel}, not ${pickedLabel}. Select the ${actualLabel} tab to log in.`
+        );
+        return;
+      }
+
       setUser(me);
       onAuthSuccess?.(me);
     } catch (err) {
@@ -66,7 +80,7 @@ export default function AuthPage({ initialMode = "login", onAuthSuccess }) {
 
     setLoading(true);
     try {
-      await registerUser({ fullName, email, password });
+      await registerUser({ fullName, email, password, role: activeRole });
       switchMode("login");
       setPassword("");
       setConfirmPassword("");

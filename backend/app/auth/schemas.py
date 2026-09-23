@@ -1,3 +1,4 @@
+
 """
 app/auth/schemas.py
 
@@ -9,6 +10,7 @@ so the frontend team knows exactly what JSON to expect.
 """
 
 import uuid
+from typing import Literal
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -16,6 +18,9 @@ class UserRegister(BaseModel):
     full_name: str = Field(..., min_length=2, max_length=150)
     email: EmailStr
     password: str = Field(..., min_length=8)
+    # Keep this set in sync with the roles seeded in
+    # database/migrations/versions/0002_seed_default_roles.py
+    role: Literal["student", "examiner", "admin"] = "student"
     organization_id: uuid.UUID | None = None
 
 
