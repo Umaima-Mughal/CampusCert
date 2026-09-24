@@ -1,3 +1,4 @@
+
 /**
  * src/auth/RegisterPage.jsx
  *
@@ -8,7 +9,14 @@
 import { useState } from "react";
 import { registerUser } from "../api/auth";
 
+const ROLE_TABS = [
+  { key: "student", label: "Student" },
+  { key: "examiner", label: "Examiner" },
+  { key: "admin", label: "Admin" },
+];
+
 export default function RegisterPage({ onNavigateToLogin, onRegisterSuccess }) {
+  const [activeTab, setActiveTab] = useState("student");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +39,7 @@ export default function RegisterPage({ onNavigateToLogin, onRegisterSuccess }) {
 
     setLoading(true);
     try {
-      await registerUser({ fullName, email, password });
+      await registerUser({ fullName, email, password, role: activeTab });
       onRegisterSuccess?.();
       onNavigateToLogin?.();
     } catch (err) {
@@ -88,8 +96,21 @@ export default function RegisterPage({ onNavigateToLogin, onRegisterSuccess }) {
         <div className="auth-form-panel">
           <div className="portal-header">Create Your CampusCert Account</div>
 
+          <div className="portal-tabs">
+            {ROLE_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`portal-tab ${activeTab === tab.key ? "active" : ""}`}
+                onClick={() => setActiveTab(tab.key)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
           <div className="portal-form-area">
-            <div className="portal-role-heading">New Registration 📝</div>
+            <div className="portal-role-heading">New {ROLE_TABS.find((t) => t.key === activeTab)?.label} Registration 📝</div>
 
             <div className="portal-links-row">
               <button type="button" onClick={onNavigateToLogin}>Back to login</button>

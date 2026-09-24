@@ -16,7 +16,7 @@ Example usage in someone else's route file:
 """
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError
 from sqlalchemy.orm import Session
 
@@ -24,12 +24,14 @@ from app.core.database import get_db
 from app.auth.security import decode_token
 from app.auth.models import User
 
-# Points Swagger UI / clients at the login endpoint for getting a token
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+# Draws a simple "paste your token" box in /docs instead of a
+# username/password form — matches how we actually log in (JSON body),
+# since our /login endpoint isn't the old-style OAuth2 form login.
+bearer_scheme = HTTPBearer()
 
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
     credentials_error = HTTPException(
@@ -38,7 +40,7 @@ def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = decode_token(token)
+        payload = decode_token(credentials.credentials)
         if payload.get("type") != "access":
             raise credentials_error
         user_id = payload.get("sub")

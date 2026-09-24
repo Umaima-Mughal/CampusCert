@@ -33,18 +33,18 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    default_role = db.query(Role).filter(Role.name == "student").first()
-    if not default_role:
+    selected_role = db.query(Role).filter(Role.name == payload.role).first()
+    if not selected_role:
         raise HTTPException(
             status_code=500,
-            detail="Default 'student' role not seeded — run DB seed script",
+            detail=f"'{payload.role}' role not seeded — run DB seed script",
         )
 
     user = User(
         full_name=payload.full_name,
         email=payload.email,
         hashed_password=hash_password(payload.password),
-        role_id=default_role.id,
+        role_id=selected_role.id,
         organization_id=payload.organization_id,
     )
     db.add(user)
