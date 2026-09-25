@@ -15,10 +15,23 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import AuthPage from "./auth/AuthPage";
+import AdminRoutes from "./admin/AdminRoutes";
+
+const ADMIN_ROLES = ["admin", "super_admin"];
+
+function postLoginPath(user) {
+  if (user && ADMIN_ROLES.includes(user.role)) return "/admin";
+  return "/";
+}
 
 function LoginRoute() {
   const navigate = useNavigate();
-  return <AuthPage initialMode="login" onAuthSuccess={() => navigate("/")} />;
+  return (
+    <AuthPage
+      initialMode="login"
+      onAuthSuccess={(user) => navigate(postLoginPath(user))}
+    />
+  );
 }
 
 function RegisterRoute() {
@@ -30,6 +43,7 @@ function HomePage() {
 
   if (loading) return <p style={{ textAlign: "center", marginTop: "40px" }}>Loading...</p>;
   if (!user) return <Navigate to="/login" replace />;
+  if (ADMIN_ROLES.includes(user.role)) return <Navigate to="/admin" replace />;
 
   return (
     <div style={{ padding: "40px", textAlign: "center", color: "#fff", background: "#030712", minHeight: "100vh" }}>
@@ -49,6 +63,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginRoute />} />
           <Route path="/register" element={<RegisterRoute />} />
+          <Route path="/admin/*" element={<AdminRoutes />} />
           <Route path="/" element={<HomePage />} />
         </Routes>
       </BrowserRouter>
