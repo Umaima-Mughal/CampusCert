@@ -69,10 +69,44 @@ export async function apiRequest(path, options = {}, auth = true) {
     // some endpoints (e.g. DELETE) return no body — that's fine
   }
 
-  if (!response.ok) {
+ /* if (!response.ok) {
     const message = (data && data.detail) || `Request failed (${response.status})`;
     throw new Error(message);
-  }
+  } */
+    if (!response.ok) {
+      let message = `Request failed (${response.status})`;
+    
+      if (data?.detail) {
+        if (typeof data.detail === "string") {
+          message = data.detail;
+        } else if (Array.isArray(data.detail)) {
+          message = data.detail
+            .map((item) => {
+              if (typeof item === "string") return item;
+    
+              if (item?.msg) {
+                const location = Array.isArray(item.loc)
+                  ? item.loc.filter(Boolean).join(" → ")
+                  : "";
+    
+                return location ? `${location}: ${item.msg}` : item.msg;
+              }
+    
+              return JSON.stringify(item);
+            })
+            .join(" | ");
+        } else if (typeof data.detail === "object") {
+          message =
+            data.detail.msg ||
+            data.detail.message ||
+            JSON.stringify(data.detail);
+        } else {
+          message = String(data.detail);
+        }
+      }
+    
+      throw new Error(message);
+    }
 
   return data;
 }
