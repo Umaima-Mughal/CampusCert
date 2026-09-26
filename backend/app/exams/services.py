@@ -350,4 +350,3 @@ def candidate_count(db: Session, exam_id) -> int:
         or 0
     )
 
-
