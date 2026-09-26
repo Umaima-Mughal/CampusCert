@@ -148,4 +148,3 @@ def serialize_exam(exam, candidate_count: int | None = None) -> ExamOut:
         created_at=exam.created_at,
         updated_at=exam.updated_at,
     )
-
