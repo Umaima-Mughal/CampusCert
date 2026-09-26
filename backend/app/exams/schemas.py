@@ -9,7 +9,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.exams.constants import STATUS_DRAFT
+from app.exams.constants import STATUS_DRAFT, MAX_STUDENTS_HARD_CAP
 
 
 class ExamCreate(BaseModel):
@@ -24,8 +24,7 @@ class ExamCreate(BaseModel):
     max_attempts: int = Field(1, ge=1, le=10)
     shuffle_questions: bool = True
     late_join_minutes: int = Field(0, ge=0, le=180)
-    # Only used by super_admin accounts that are not tied to one org.
-    organization_id: uuid.UUID | None = None
+    max_students: int = Field(..., ge=1, le=MAX_STUDENTS_HARD_CAP)
 
     @field_validator("distribution")
     @classmethod
@@ -53,6 +52,7 @@ class ExamUpdate(BaseModel):
     max_attempts: int | None = Field(None, ge=1, le=10)
     shuffle_questions: bool | None = None
     late_join_minutes: int | None = Field(None, ge=0, le=180)
+    max_students: int | None = Field(None, ge=1, le=MAX_STUDENTS_HARD_CAP)
 
     @field_validator("distribution")
     @classmethod
@@ -99,6 +99,7 @@ class ExamOut(BaseModel):
     max_attempts: int
     shuffle_questions: bool
     late_join_minutes: int
+    max_students: int
     distribution: dict[str, int]
     is_active: bool
     candidate_count: int = 0
@@ -140,6 +141,7 @@ def serialize_exam(exam, candidate_count: int | None = None) -> ExamOut:
         max_attempts=exam.max_attempts,
         shuffle_questions=exam.shuffle_questions,
         late_join_minutes=exam.late_join_minutes,
+        max_students=exam.max_students,
         distribution=exam.distribution or {},
         is_active=exam.status == "ACTIVE",
         candidate_count=count,

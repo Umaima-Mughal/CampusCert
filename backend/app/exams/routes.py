@@ -27,7 +27,7 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import require_role
 from app.auth.models import User
 from app.core.database import get_db
-from app.exams.constants import ADMIN_ROLES, STATUS_ACTIVE, STATUS_ARCHIVED, STATUS_CLOSED
+from app.exams.constants import EXAM_MANAGER_ROLES, STATUS_ACTIVE, STATUS_ARCHIVED, STATUS_CLOSED
 from app.exams.schemas import (
     CandidateOut,
     ExamCandidateAssign,
@@ -43,7 +43,7 @@ from app.exams import services
 
 router = APIRouter(prefix="/api/exams", tags=["exams"])
 
-admin_user = require_role(*ADMIN_ROLES)
+admin_user = require_role(*EXAM_MANAGER_ROLES)
 
 
 def _candidate_out(user: User) -> CandidateOut:

@@ -11,7 +11,7 @@
  *   <Route path="/examiner/*" element={<ExaminerDashboard />} />
  * Since this file is shared, give the team a heads-up before editing it.
  */
-
+import OrganizationOnboardPage from "./auth/OrganizationOnboardPage";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import AuthPage from "./auth/AuthPage";
@@ -35,7 +35,14 @@ function LoginRoute() {
 }
 
 function RegisterRoute() {
-  return <AuthPage initialMode="register" />;
+  const navigate = useNavigate();
+
+  return (
+    <AuthPage
+      initialMode="register"
+      onAuthSuccess={(user) => navigate(postLoginPath(user))}
+    />
+  );
 }
 
 function HomePage() {
@@ -63,6 +70,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginRoute />} />
           <Route path="/register" element={<RegisterRoute />} />
+          <Route path="/organization/onboard" element={<OrganizationOnboardPage />} /> 
           <Route path="/admin/*" element={<AdminRoutes />} />
           <Route path="/" element={<HomePage />} />
         </Routes>

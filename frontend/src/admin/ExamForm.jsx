@@ -16,6 +16,7 @@ const emptyForm = {
   instructions: "",
   passing_score: 50,
   max_attempts: 1,
+  max_students: 30,
   shuffle_questions: true,
   late_join_minutes: 0,
   starts_at: "",
@@ -45,6 +46,7 @@ export default function ExamForm() {
           instructions: exam.instructions || "",
           passing_score: exam.passing_score ?? "",
           max_attempts: exam.max_attempts,
+          max_students: exam.max_students ?? 30,
           shuffle_questions: exam.shuffle_questions,
           late_join_minutes: exam.late_join_minutes,
           starts_at: toDateTimeLocal(exam.starts_at),
@@ -86,6 +88,16 @@ export default function ExamForm() {
       setError("Duration must be at least 1 minute.");
       return;
     }
+    const maxStudents = Number(form.max_students);
+
+if (
+  !Number.isFinite(maxStudents) ||
+  maxStudents < 1 ||
+  maxStudents > 100000
+) {
+  setError("Maximum Students must be between 1 and 100000.");
+  return;
+}
 
     const payload = {
       name: form.name.trim(),
@@ -94,6 +106,7 @@ export default function ExamForm() {
       instructions: form.instructions.trim() || null,
       passing_score: form.passing_score === "" ? null : Number(form.passing_score),
       max_attempts: Number(form.max_attempts) || 1,
+      max_students: maxStudents,
       shuffle_questions: Boolean(form.shuffle_questions),
       late_join_minutes: Number(form.late_join_minutes) || 0,
       starts_at: toIsoOrNull(form.starts_at),
@@ -180,6 +193,18 @@ export default function ExamForm() {
               onChange={(e) => updateField("max_attempts", e.target.value)}
             />
           </div>
+          <div className="admin-field">
+  <label htmlFor="max-students">Maximum Students</label>
+  <input
+    id="max-students"
+    type="number"
+    min="1"
+    max="100000"
+    value={form.max_students}
+    onChange={(e) => updateField("max_students", e.target.value)}
+    required
+  />
+</div>
           <div className="admin-field">
             <label htmlFor="late-join">Late join (minutes)</label>
             <input

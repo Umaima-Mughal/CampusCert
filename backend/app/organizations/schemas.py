@@ -14,6 +14,11 @@ class OrganizationCreate(BaseModel):
     contact_email: EmailStr | None = None
 
 
+class OrganizationOnboard(BaseModel):
+    name: str = Field(..., min_length=2, max_length=200)
+    contact_email: EmailStr
+
+
 class OrganizationUpdate(BaseModel):
     name: str | None = None
     contact_email: EmailStr | None = None
@@ -26,6 +31,7 @@ class OrganizationOut(BaseModel):
     slug: str
     contact_email: EmailStr | None
     is_active: bool
+    org_code: str
 
     class Config:
         from_attributes = True

@@ -43,19 +43,20 @@ def can_transition(current: str, target: str) -> bool:
 
 
 def resolve_organization_id(user: User, requested_org_id=None):
+    """
+    Tenant is always the authenticated user's organization.
+    Frontend-supplied organization IDs are ignored for admin/examiner.
+    """
     role_name = user.role.name
-    if role_name == "admin":
+    if role_name in ("admin", "examiner"):
         if not user.organization_id:
-            raise _bad_request(
-                "Your admin account is not linked to an organization. "
-                "Ask a platform administrator to assign one."
-            )
+            raise _bad_request("User is not assigned to an organization.")
         return user.organization_id
 
     if role_name == "super_admin":
-        org_id = requested_org_id or user.organization_id
+        org_id = user.organization_id or requested_org_id
         if not org_id:
-            raise _bad_request("organization_id is required for this account")
+            raise _bad_request("User is not assigned to an organization.")
         return org_id
 
     raise _forbidden()
@@ -64,7 +65,7 @@ def resolve_organization_id(user: User, requested_org_id=None):
 def assert_exam_access(user: User, exam: Exam) -> None:
     if user.role.name == "super_admin":
         return
-    if user.role.name == "admin" and user.organization_id == exam.organization_id:
+    if user.role.name in ("admin", "examiner") and user.organization_id == exam.organization_id:
         return
     raise _not_found()
 
@@ -95,9 +96,11 @@ def _validate_window(starts_at: datetime | None, ends_at: datetime | None, durat
 
 
 def create_exam(db: Session, user: User, payload: ExamCreate) -> Exam:
-    organization_id = resolve_organization_id(user, payload.organization_id)
+    organization_id = resolve_organization_id(user)
     _ensure_org_exists(db, organization_id)
     _validate_window(payload.starts_at, payload.ends_at, payload.duration_minutes)
+    # Future subscription/entitlement checks (plan max vs payload.max_students)
+    # belong here. This phase stores exam capacity only.
 
     status_value = STATUS_DRAFT
     if payload.starts_at and payload.ends_at:
@@ -117,6 +120,7 @@ def create_exam(db: Session, user: User, payload: ExamCreate) -> Exam:
         max_attempts=payload.max_attempts,
         shuffle_questions=payload.shuffle_questions,
         late_join_minutes=payload.late_join_minutes,
+        max_students=payload.max_students,
         distribution=payload.distribution or {},
     )
     db.add(exam)
@@ -130,7 +134,7 @@ def list_exams(db: Session, user: User, status_filter: str | None = None) -> lis
         ExamCandidate, ExamCandidate.exam_id == Exam.id
     )
 
-    if user.role.name == "admin":
+    if user.role.name in ("admin", "examiner"):
         if not user.organization_id:
             return []
         query = query.filter(Exam.organization_id == user.organization_id)
@@ -157,6 +161,12 @@ def update_exam(db: Session, exam: Exam, payload: ExamUpdate) -> Exam:
     data = payload.model_dump(exclude_unset=True)
     if "name" in data and data["name"] is not None:
         data["name"] = data["name"].strip()
+    if "max_students" in data and data["max_students"] is not None:
+        assigned = candidate_count(db, exam.id)
+        if data["max_students"] < assigned:
+            raise _bad_request(
+                f"Maximum students cannot be below the {assigned} candidate(s) already assigned"
+            )
 
     for field, value in data.items():
         setattr(exam, field, value)
@@ -229,7 +239,7 @@ def delete_exam(db: Session, exam: Exam) -> None:
 
 def exam_summary(db: Session, user: User) -> dict:
     query = db.query(Exam.status, func.count(Exam.id))
-    if user.role.name == "admin":
+    if user.role.name in ("admin", "examiner"):
         if not user.organization_id:
             return {"total": 0, "by_status": {}, "upcoming": 0}
         query = query.filter(Exam.organization_id == user.organization_id)
@@ -243,7 +253,7 @@ def exam_summary(db: Session, user: User) -> dict:
     upcoming_query = db.query(func.count(Exam.id)).filter(
         Exam.status == STATUS_SCHEDULED
     )
-    if user.role.name == "admin" and user.organization_id:
+    if user.role.name in ("admin", "examiner") and user.organization_id:
         upcoming_query = upcoming_query.filter(Exam.organization_id == user.organization_id)
     upcoming = int(upcoming_query.scalar() or 0)
     return {"total": total, "by_status": by_status, "upcoming": upcoming}
@@ -306,10 +316,15 @@ def assign_candidates(db: Session, exam: Exam, user_ids: list) -> list[User]:
             ExamCandidate.user_id.in_(unique_ids),
         )
     }
-    for student in students:
-        if student.id in existing:
-            continue
-        db.add(ExamCandidate(exam_id=exam.id, user_id=student.id))
+    new_ids = [student.id for student in students if student.id not in existing]
+    assigned = candidate_count(db, exam.id)
+    if assigned + len(new_ids) > exam.max_students:
+        raise _bad_request(
+            f"This exam allows at most {exam.max_students} students "
+            f"({assigned} already assigned)."
+        )
+    for student_id in new_ids:
+        db.add(ExamCandidate(exam_id=exam.id, user_id=student_id))
 
     db.commit()
     return list_exam_candidates(db, exam)

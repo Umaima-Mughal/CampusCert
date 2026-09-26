@@ -16,6 +16,8 @@ class Organization(BaseModel):
     slug = Column(String(100), unique=True, nullable=False)  # e.g. "cust-university"
     contact_email = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    # User-facing code (e.g. CC-7K4Q2M). The UUID `id` remains the PK.
+    org_code = Column(String(32), unique=True, index=True, nullable=False)
 
     # Note: linked from the User side (auth/models.py) via organization_id,
     # not a direct relationship() here, to avoid a circular import between

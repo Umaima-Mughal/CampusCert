@@ -50,6 +50,7 @@ class Exam(BaseModel):
     max_attempts = Column(Integer, nullable=False, default=1)
     shuffle_questions = Column(Boolean, nullable=False, default=True)
     late_join_minutes = Column(Integer, nullable=False, default=0)
+    max_students = Column(Integer, nullable=False, default=1)
 
     # Subject/topic counts for Member 3 random selection, e.g.
     # { "<subject_uuid>": 10 }. Empty until the question bank exists.

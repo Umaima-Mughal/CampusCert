@@ -26,4 +26,7 @@ ALLOWED_TRANSITIONS = {
 }
 
 ADMIN_ROLES = ("admin", "super_admin")
+EXAM_MANAGER_ROLES = ("admin", "super_admin", "examiner")
 STUDENT_ROLE = "student"
+# Technical integer ceiling only — not a subscription/plan limit.
+MAX_STUDENTS_HARD_CAP = 100000

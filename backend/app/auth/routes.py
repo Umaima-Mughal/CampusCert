@@ -23,8 +23,26 @@ from app.auth.security import (
     decode_token,
 )
 from app.auth.dependencies import get_current_user
+from app.organizations.models import Organization
+from app.organizations.utils import get_active_org_by_code
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+
+def _user_out(user: User, db: Session) -> UserOut:
+    org = None
+    if user.organization_id:
+        org = db.query(Organization).filter(Organization.id == user.organization_id).first()
+    return UserOut(
+        id=user.id,
+        full_name=user.full_name,
+        email=user.email,
+        role=user.role.name,
+        is_active=user.is_active,
+        organization_id=user.organization_id,
+        org_code=org.org_code if org else None,
+        organization_name=org.name if org else None,
+    )
 
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
@@ -40,24 +58,20 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
             detail=f"'{payload.role}' role not seeded — run DB seed script",
         )
 
+    organization = get_active_org_by_code(db, payload.org_code)
+
     user = User(
         full_name=payload.full_name,
         email=payload.email,
         hashed_password=hash_password(payload.password),
         role_id=selected_role.id,
-        organization_id=payload.organization_id,
+        organization_id=organization.id,
     )
     db.add(user)
     db.commit()
     db.refresh(user)
 
-    return UserOut(
-        id=user.id,
-        full_name=user.full_name,
-        email=user.email,
-        role=user.role.name,
-        is_active=user.is_active,
-    )
+    return _user_out(user, db)
 
 
 @router.post("/login", response_model=TokenPair)
@@ -94,11 +108,8 @@ def refresh(payload: TokenRefreshRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/me", response_model=UserOut)
-def get_me(current_user: User = Depends(get_current_user)):
-    return UserOut(
-        id=current_user.id,
-        full_name=current_user.full_name,
-        email=current_user.email,
-        role=current_user.role.name,
-        is_active=current_user.is_active,
-    )
+def get_me(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return _user_out(current_user, db)
