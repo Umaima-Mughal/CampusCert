@@ -27,6 +27,7 @@ def test_exam_create_schema_accepts_distribution():
     payload = ExamCreate(
         name="Midterm",
         duration_minutes=90,
+        max_students=1000,
         distribution={"subject-a": 5, "subject-b": 3},
     )
     assert payload.distribution["subject-a"] == 5
@@ -34,7 +35,7 @@ def test_exam_create_schema_accepts_distribution():
 
 def test_exam_create_schema_rejects_zero_count():
     with pytest.raises(ValidationError):
-        ExamCreate(name="Midterm", duration_minutes=60, distribution={"subject-a": 0})
+        ExamCreate(name="Midterm", duration_minutes=60, max_students=1000, distribution={"subject-a": 0})
 
 
 def test_lifecycle_transitions():
@@ -50,6 +51,7 @@ def test_exam_window_helper_values():
     payload = ExamCreate(
         name="Windowed exam",
         duration_minutes=90,
+        max_students=1000,
         starts_at=start,
         ends_at=end,
     )
