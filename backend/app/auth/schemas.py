@@ -20,6 +20,9 @@ class UserRegister(BaseModel):
     # Keep this set in sync with the roles seeded in
     # database/migrations/versions/0002_seed_default_roles.py
     role: Literal["student", "examiner", "admin"] = "student"
+    org_code: str = Field(..., min_length=3, max_length=32)
+    # Legacy field — ignored when org_code is present. Kept so older clients
+    # do not break, but registration always resolves org_code server-side.
     organization_id: uuid.UUID | None = None
 
 
@@ -34,6 +37,9 @@ class UserOut(BaseModel):
     email: EmailStr
     role: str
     is_active: bool
+    organization_id: uuid.UUID | None = None
+    org_code: str | None = None
+    organization_name: str | None = None
 
     class Config:
         from_attributes = True  # lets us build this from a SQLAlchemy model

@@ -19,9 +19,27 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.auth.dependencies import require_role
 from app.organizations.models import Organization
-from app.organizations.schemas import OrganizationCreate, OrganizationUpdate, OrganizationOut
+from app.organizations.schemas import (
+    OrganizationCreate,
+    OrganizationOnboard,
+    OrganizationUpdate,
+    OrganizationOut,
+)
+from app.organizations.utils import onboard_organization, unique_org_code
 
 router = APIRouter(prefix="/api/organizations", tags=["organizations"])
+
+
+@router.post("/onboard", response_model=OrganizationOut, status_code=status.HTTP_201_CREATED)
+def onboard_new_organization(
+    payload: OrganizationOnboard,
+    db: Session = Depends(get_db),
+):
+    """
+    Public onboarding only. Does not replace protected organization CRUD.
+    Creates one organization and returns its user-facing org_code.
+    """
+    return onboard_organization(db, payload.name, str(payload.contact_email))
 
 
 @router.post("", response_model=OrganizationOut, status_code=status.HTTP_201_CREATED)
@@ -34,7 +52,12 @@ def create_organization(
     if existing:
         raise HTTPException(status_code=400, detail="Slug already in use")
 
-    org = Organization(**payload.model_dump())
+    org = Organization(
+        name=payload.name,
+        slug=payload.slug,
+        contact_email=payload.contact_email,
+        org_code=unique_org_code(db),
+    )
     db.add(org)
     db.commit()
     db.refresh(org)

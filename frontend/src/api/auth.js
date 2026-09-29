@@ -10,7 +10,7 @@
 
 import { apiRequest, setTokens, clearTokens } from "./client";
 
-export async function registerUser({ fullName, email, password, role, organizationId }) {
+export async function registerUser({ fullName, email, password, role, orgCode, organizationId }) {
   return apiRequest(
     "/api/auth/register",
     {
@@ -20,6 +20,7 @@ export async function registerUser({ fullName, email, password, role, organizati
         email,
         password,
         role: role || "student",
+        org_code: orgCode,
         organization_id: organizationId || null,
       }),
     },

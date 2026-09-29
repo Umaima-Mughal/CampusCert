@@ -34,6 +34,7 @@ from app.core.database import Base            # noqa: E402
 # otherwise autogenerate won't "see" their tables.
 from app.auth.models import User, Role                 # noqa: E402,F401
 from app.organizations.models import Organization       # noqa: E402,F401
+from app.exams.models import Exam, ExamCandidate        # noqa: E402,F401
 
 # Alembic Config object, gives access to values in alembic.ini
 config = context.config
