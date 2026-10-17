@@ -41,6 +41,7 @@ export default function AdminDashboard() {
           {/*<NavLink to="/admin/exams">Exams</NavLink>*/}
           <NavLink to="/admin/exams" end>Exams</NavLink>
           <NavLink to="/admin/exams/new">Create exam</NavLink>
+          <NavLink to="/admin/papers">Exam papers</NavLink>
         </nav>
       </aside>
       <div className="admin-main">

@@ -21,6 +21,7 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 
 from app.core.base_model import BaseModel
+from app.questions.models import ExamPaper  # noqa: F401  (registers exam_papers for the paper_id FK)
 
 
 class Exam(BaseModel):
@@ -51,6 +52,11 @@ class Exam(BaseModel):
     shuffle_questions = Column(Boolean, nullable=False, default=True)
     late_join_minutes = Column(Integer, nullable=False, default=0)
     max_students = Column(Integer, nullable=False, default=1)
+
+    # Question paper (Member 3's exam_papers.id) this exam will show. Optional.
+    paper_id = Column(
+        Integer, ForeignKey("exam_papers.id", ondelete="SET NULL"), nullable=True, index=True
+    )
 
     # Subject/topic counts for Member 3 random selection, e.g.
     # { "<subject_uuid>": 10 }. Empty until the question bank exists.

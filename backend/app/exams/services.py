@@ -24,6 +24,7 @@ from app.exams.constants import (
 from app.exams.models import Exam, ExamCandidate
 from app.exams.schemas import ExamCreate, ExamSchedule, ExamUpdate
 from app.organizations.models import Organization
+from app.questions.models import ExamPaper, ExamPaperItem
 
 
 def _forbidden(message: str = "You don't have permission to perform this action"):
@@ -84,6 +85,53 @@ def _ensure_org_exists(db: Session, organization_id) -> None:
         raise _bad_request("Organization not found or inactive")
 
 
+def _validate_paper(db: Session, organization_id, paper_id) -> None:
+    """The paper must exist and belong to the same organization as the exam."""
+    if paper_id is None:
+        return
+    paper = db.query(ExamPaper).filter(ExamPaper.id == paper_id).first()
+    if not paper or paper.organization_id != organization_id:
+        raise _bad_request("Question paper not found")
+
+
+def paper_question_count(db: Session, paper_id) -> int | None:
+    """None when no paper is attached, otherwise how many questions the paper holds."""
+    if paper_id is None:
+        return None
+    return int(
+        db.query(func.count(ExamPaperItem.id)).filter(ExamPaperItem.paper_id == paper_id).scalar() or 0
+    )
+
+
+def has_no_questions(db: Session, exam: Exam) -> bool:
+    """True when nothing a student could be asked is attached (no distribution, no or an empty paper)."""
+    if exam.distribution:
+        return False
+    return not paper_question_count(db, exam.paper_id)
+
+
+def can_delete_exam(db: Session, exam: Exam) -> bool:
+    """Drafts and scheduled exams can always go. A live or finished exam can only go while it holds
+    no questions, because then nobody can have sat it."""
+    return exam.status in {STATUS_DRAFT, STATUS_SCHEDULED} or has_no_questions(db, exam)
+
+
+def can_change_paper(db: Session, exam: Exam) -> bool:
+    if exam.status in {STATUS_DRAFT, STATUS_SCHEDULED}:
+        return True
+    # a live exam whose paper is empty can't be sat by anyone, so its paper may be fixed in place
+    return exam.status == STATUS_ACTIVE and paper_question_count(db, exam.paper_id) == 0
+
+
+def exam_flags(db: Session, exam: Exam) -> dict:
+    """Extra facts the exam page uses to show or hide its buttons."""
+    return {
+        "paper_question_count": paper_question_count(db, exam.paper_id),
+        "can_delete": can_delete_exam(db, exam),
+        "can_change_paper": can_change_paper(db, exam),
+    }
+
+
 def _validate_window(starts_at: datetime | None, ends_at: datetime | None, duration_minutes: int):
     if starts_at and ends_at and ends_at <= starts_at:
         raise _bad_request("ends_at must be after starts_at")
@@ -99,6 +147,7 @@ def create_exam(db: Session, user: User, payload: ExamCreate) -> Exam:
     organization_id = resolve_organization_id(user)
     _ensure_org_exists(db, organization_id)
     _validate_window(payload.starts_at, payload.ends_at, payload.duration_minutes)
+    _validate_paper(db, organization_id, payload.paper_id)
     # Future subscription/entitlement checks (plan max vs payload.max_students)
     # belong here. This phase stores exam capacity only.
 
@@ -121,6 +170,7 @@ def create_exam(db: Session, user: User, payload: ExamCreate) -> Exam:
         shuffle_questions=payload.shuffle_questions,
         late_join_minutes=payload.late_join_minutes,
         max_students=payload.max_students,
+        paper_id=payload.paper_id,
         distribution=payload.distribution or {},
     )
     db.add(exam)
@@ -152,13 +202,37 @@ def list_exams(db: Session, user: User, status_filter: str | None = None) -> lis
     return [(exam, int(count or 0)) for exam, count in rows]
 
 
+def _replace_paper_of_live_exam(db: Session, exam: Exam, new_paper_id) -> Exam:
+    """Fix the paper of a live exam whose current paper has no questions."""
+    if new_paper_id is None:
+        exam.paper_id = None
+        if not exam.distribution:
+            # nothing left to ask, so the exam leaves the live window
+            exam.status = STATUS_SCHEDULED if exam.starts_at and exam.ends_at else STATUS_DRAFT
+    else:
+        _validate_paper(db, exam.organization_id, new_paper_id)
+        if not paper_question_count(db, new_paper_id):
+            raise _bad_request("That paper has no questions either. Choose a paper that has questions.")
+        exam.paper_id = new_paper_id
+    db.commit()
+    db.refresh(exam)
+    return exam
+
+
 def update_exam(db: Session, exam: Exam, payload: ExamUpdate) -> Exam:
+    data = payload.model_dump(exclude_unset=True)
+    only_paper = set(data) == {"paper_id"}
+
+    if exam.status == STATUS_ACTIVE and only_paper and paper_question_count(db, exam.paper_id) == 0:
+        return _replace_paper_of_live_exam(db, exam, data["paper_id"])
+
     if exam.status in {STATUS_ACTIVE, STATUS_CLOSED, STATUS_ARCHIVED}:
+        if exam.status == STATUS_ACTIVE and only_paper:
+            raise _bad_request("This exam is live. Deactivate it first, then change or remove its paper.")
         raise _bad_request(
             f"An exam in {exam.status} status cannot be reconfigured"
         )
 
-    data = payload.model_dump(exclude_unset=True)
     if "name" in data and data["name"] is not None:
         data["name"] = data["name"].strip()
     if "max_students" in data and data["max_students"] is not None:
@@ -167,6 +241,9 @@ def update_exam(db: Session, exam: Exam, payload: ExamUpdate) -> Exam:
             raise _bad_request(
                 f"Maximum students cannot be below the {assigned} candidate(s) already assigned"
             )
+
+    if "paper_id" in data:
+        _validate_paper(db, exam.organization_id, data["paper_id"])
 
     for field, value in data.items():
         setattr(exam, field, value)
@@ -207,6 +284,13 @@ def change_exam_status(db: Session, exam: Exam, target: str) -> Exam:
     if target == STATUS_ACTIVE:
         if exam.duration_minutes < 1:
             raise _bad_request("Duration must be set before activating an exam")
+        if not exam.paper_id and not exam.distribution:
+            raise _bad_request("Attach a question paper before activating the exam")
+        if exam.paper_id and not exam.distribution and not paper_question_count(db, exam.paper_id):
+            raise _bad_request(
+                "The attached paper has no questions. Add questions to it or attach a different "
+                "paper before activating the exam."
+            )
         if exam.starts_at and exam.ends_at:
             _validate_window(exam.starts_at, exam.ends_at, exam.duration_minutes)
 
@@ -223,16 +307,25 @@ def change_exam_status(db: Session, exam: Exam, target: str) -> Exam:
 def deactivate_exam(db: Session, exam: Exam) -> Exam:
     """Take a live or scheduled exam out of the student-facing window."""
     if exam.status == STATUS_ACTIVE:
-        target = STATUS_SCHEDULED if exam.starts_at and exam.ends_at else STATUS_DRAFT
-        return change_exam_status(db, exam, target)
+        # Deactivating is its own action, not a lifecycle step, so it is allowed to land on DRAFT
+        # (an exam that was activated by hand has no window). Going through change_exam_status
+        # refused ACTIVE -> DRAFT and left such exams stuck.
+        exam.status = STATUS_SCHEDULED if exam.starts_at and exam.ends_at else STATUS_DRAFT
+        db.commit()
+        db.refresh(exam)
+        return exam
     if exam.status == STATUS_SCHEDULED:
         return change_exam_status(db, exam, STATUS_DRAFT)
     raise _bad_request("Only scheduled or active exams can be deactivated")
 
 
 def delete_exam(db: Session, exam: Exam) -> None:
-    if exam.status != STATUS_DRAFT:
-        raise _bad_request("Only draft exams can be deleted")
+    if not can_delete_exam(db, exam):
+        if exam.status == STATUS_ACTIVE:
+            raise _bad_request("A live exam can't be deleted. Deactivate it first.")
+        raise _bad_request(
+            "This exam had questions, so it is kept for the records and can't be deleted."
+        )
     db.delete(exam)
     db.commit()
 

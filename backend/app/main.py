@@ -39,3 +39,8 @@ app.include_router(exams_router)
 def health_check():
     """Simple endpoint to confirm the API is up (used by docker-compose/CI)."""
     return {"status": "ok", "app": settings.APP_NAME}
+
+
+# --- Question bank (Member 3) ---
+from app.questions.router import router as questions_router  # noqa: E402
+app.include_router(questions_router, prefix="/api/v1")

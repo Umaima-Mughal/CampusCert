@@ -25,6 +25,7 @@ class ExamCreate(BaseModel):
     shuffle_questions: bool = True
     late_join_minutes: int = Field(0, ge=0, le=180)
     max_students: int = Field(..., ge=1, le=MAX_STUDENTS_HARD_CAP)
+    paper_id: int | None = None  # exam_papers.id from the question bank
 
     @field_validator("distribution")
     @classmethod
@@ -53,6 +54,7 @@ class ExamUpdate(BaseModel):
     shuffle_questions: bool | None = None
     late_join_minutes: int | None = Field(None, ge=0, le=180)
     max_students: int | None = Field(None, ge=1, le=MAX_STUDENTS_HARD_CAP)
+    paper_id: int | None = None  # send null to detach the paper
 
     @field_validator("distribution")
     @classmethod
@@ -100,9 +102,14 @@ class ExamOut(BaseModel):
     shuffle_questions: bool
     late_join_minutes: int
     max_students: int
+    paper_id: int | None = None
     distribution: dict[str, int]
     is_active: bool
     candidate_count: int = 0
+    # facts for the exam page (only filled in when a single exam is fetched)
+    paper_question_count: int | None = None
+    can_delete: bool = False
+    can_change_paper: bool = False
     created_at: datetime
     updated_at: datetime
 
@@ -122,7 +129,7 @@ class ExamStatusChangeOut(BaseModel):
     is_active: bool = False
 
 
-def serialize_exam(exam, candidate_count: int | None = None) -> ExamOut:
+def serialize_exam(exam, candidate_count: int | None = None, flags: dict | None = None) -> ExamOut:
     count = candidate_count
     if count is None:
         count = len(exam.candidates) if getattr(exam, "candidates", None) is not None else 0
@@ -142,9 +149,11 @@ def serialize_exam(exam, candidate_count: int | None = None) -> ExamOut:
         shuffle_questions=exam.shuffle_questions,
         late_join_minutes=exam.late_join_minutes,
         max_students=exam.max_students,
+        paper_id=exam.paper_id,
         distribution=exam.distribution or {},
         is_active=exam.status == "ACTIVE",
         candidate_count=count,
         created_at=exam.created_at,
         updated_at=exam.updated_at,
+        **(flags or {}),
     )

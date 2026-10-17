@@ -4,6 +4,7 @@ import AdminHome from "./AdminHome";
 import ExamList from "./ExamList";
 import ExamForm from "./ExamForm";
 import ExamDetail from "./ExamDetail";
+import AdminPapers from "../questionbank/AdminPapers";
 
 export default function AdminRoutes() {
   return (
@@ -14,6 +15,7 @@ export default function AdminRoutes() {
         <Route path="exams/new" element={<ExamForm />} />
         <Route path="exams/:examId" element={<ExamDetail />} />
         <Route path="exams/:examId/edit" element={<ExamForm />} />
+        <Route path="papers" element={<AdminPapers />} />
       </Route>
     </Routes>
   );
