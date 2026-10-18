@@ -25,3 +25,19 @@ Question: `{id, subject, difficulty, topic, question, created_at}`
 
 Tables: `questions`, `exam_papers`, `exam_paper_items(paper_id, question_id, position, marks)`.
 Member 2 (`exams`): an exam can reference `exam_papers.id` to know which questions to show.
+
+## Who sees what (private banks, shared papers)
+
+| | Questions | Papers |
+|---|---|---|
+| Examiner | only their own (every examiner has a private bank) | every paper of their organization, can edit them |
+| Admin | none | every paper of their organization, read-only, no answers |
+| Another organization | none | none |
+
+A paper may contain questions from several examiners. Editing a paper can keep the questions already in it,
+but can only ADD questions from your own bank.
+
+Questions that existed before private banks have no owner and stay hidden from examiners until you assign them:
+
+    UPDATE questions SET created_by = '<examiner users.id>'
+    WHERE organization_id = '<organizations.id>' AND created_by IS NULL;

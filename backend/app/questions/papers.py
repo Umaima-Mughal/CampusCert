@@ -10,7 +10,7 @@ from app.core.database import get_db
 from app.exams.constants import STATUS_ACTIVE, STATUS_SCHEDULED
 from app.exams.models import Exam
 
-from .access import bank_user, org_scope, paper_reader, scoped
+from .access import bank_user, my_bank, org_scope, paper_reader, scoped
 from .models import ExamPaper, ExamPaperItem, Question
 from .schemas import PaperGenerate, PaperIn, PaperItemOut, PaperOut, PaperSummary
 from .selection import select_random
@@ -62,8 +62,13 @@ def _write_items(db: Session, paper_id: int, pairs, user: User):
         if qid not in seen:
             seen.add(qid)
             ordered.append((qid, marks))
-    found = {q for (q,) in scoped(db.query(Question.id), Question, user).filter(Question.id.in_(seen))}
-    if len(found) != len(seen):
+    # A question must come from the examiner's OWN bank, or already be in this paper (another examiner of
+    # the organization put it there). Questions in other examiners' banks cannot be added.
+    own = {q for (q,) in my_bank(db.query(Question.id), user).filter(Question.id.in_(seen))}
+    in_paper_q = db.query(ExamPaperItem.question_id).filter(
+        ExamPaperItem.paper_id == paper_id, ExamPaperItem.question_id.in_(seen))
+    in_paper = {q for (q,) in in_paper_q}
+    if (own | in_paper) != seen:
         raise HTTPException(422, "Some of those questions no longer exist. Refresh and try again.")
     db.query(ExamPaperItem).filter(ExamPaperItem.paper_id == paper_id).delete(synchronize_session=False)
     db.flush()
@@ -87,7 +92,7 @@ def create_paper(body: PaperIn, db: Session = Depends(get_db), user: User = Depe
 @router.post("/generate", response_model=PaperOut, status_code=201)
 def generate_paper(body: PaperGenerate, db: Session = Depends(get_db), user: User = Depends(bank_user)):
     """Pick random questions from the teacher's filters and save them as a paper."""
-    items, requested, available, shortfall = select_random(db, body, scoped(db.query(Question), Question, user))
+    items, requested, available, shortfall = select_random(db, body, my_bank(db.query(Question), user))
     if not items:
         raise HTTPException(409, "No questions match those filters, so no paper was made.")
     if shortfall and not body.allow_partial:

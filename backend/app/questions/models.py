@@ -33,11 +33,14 @@ class Question(Base):
     # Which university/college owns this question (organizations.id). Questions are
     # private to their organization, like exams are.
     organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id"), nullable=True, index=True)
-    created_by = Column(Integer, nullable=True)      # teacher user id (fill from auth)
+    # The examiner who owns this question: every examiner has a private question bank.
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    # the same question may exist once per organization
-    __table_args__ = (UniqueConstraint("organization_id", "content_hash", name="uq_questions_org_content_hash"),)
+    # an examiner keeps a given question once; two examiners may each hold their own copy
+    __table_args__ = (
+        UniqueConstraint("organization_id", "created_by", "content_hash", name="uq_questions_owner_content_hash"),
+    )
 
 
 class ExamPaper(Base):

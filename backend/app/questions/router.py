@@ -10,7 +10,7 @@ from app.core.database import get_db
 from app.exams.constants import STATUS_ACTIVE, STATUS_SCHEDULED
 from app.exams.models import Exam
 
-from .access import bank_user, org_scope, same_org, scoped
+from .access import bank_user, my_bank, org_scope, same_org, scoped
 from .models import ExamPaper, ExamPaperItem, Question, question_hash
 from .papers import router as papers_router
 from .parser import parse_file
@@ -64,8 +64,9 @@ async def import_questions(
             "total_errors": len(parsed.errors) or 1,
         })
 
-    # hashes already in this organization + hashes repeated inside the same file
-    seen = {h for (h,) in db.query(Question.content_hash).filter(same_org(Question, org_id)).all()}
+    # hashes already in THIS examiner's own bank + hashes repeated inside the same file
+    mine = db.query(Question.content_hash).filter(same_org(Question, org_id), Question.created_by == user.id)
+    seen = {h for (h,) in mine.all()}
     new_rows, duplicates = [], 0
     for r in parsed.rows:
         h = question_hash(r["subject"], r["topic"], r["question"])
@@ -73,7 +74,7 @@ async def import_questions(
             duplicates += 1
             continue
         seen.add(h)
-        new_rows.append(Question(**r, content_hash=h, organization_id=org_id))
+        new_rows.append(Question(**r, content_hash=h, organization_id=org_id, created_by=user.id))
 
     db.add_all(new_rows)
     db.commit()
@@ -103,7 +104,7 @@ def list_questions(
     db: Session = Depends(get_db),
     user: User = Depends(bank_user),
 ):
-    query = _apply_filters(scoped(db.query(Question), Question, user), subject, topic, difficulty, q)
+    query = _apply_filters(my_bank(db.query(Question), user), subject, topic, difficulty, q)
     total = query.count()
     items = (query.order_by(Question.subject, Question.topic, Question.id)
                   .offset((page - 1) * page_size).limit(page_size).all())
@@ -117,8 +118,8 @@ def filter_options(
     user: User = Depends(bank_user),
 ):
     """Dropdown values. Topics narrow to the chosen subject."""
-    subjects = [s for (s,) in scoped(db.query(Question.subject), Question, user).distinct().order_by(Question.subject)]
-    tq = scoped(db.query(Question.topic), Question, user).distinct()
+    subjects = [s for (s,) in my_bank(db.query(Question.subject), user).distinct().order_by(Question.subject)]
+    tq = my_bank(db.query(Question.topic), user).distinct()
     if subject:
         tq = tq.filter(Question.subject == subject)
     topics = [t for (t,) in tq.order_by(Question.topic)]
@@ -133,7 +134,7 @@ def random_questions(
 ):
     """Random questions that match subject / topics / difficulty and are not in `exclude_ids`.
     Used by the "Change question" button in the exam paper editor."""
-    items, requested, available, shortfall = select_random(db, req, scoped(db.query(Question), Question, user))
+    items, requested, available, shortfall = select_random(db, req, my_bank(db.query(Question), user))
     return RandomResult(items=items, requested=requested, returned=len(items),
                         available=available, shortfall=shortfall)
 
@@ -166,9 +167,13 @@ def _delete_questions(db: Session, user: User, ids: list) -> int:
     deleted = 0
     for start in range(0, len(ids), 1000):
         chunk = ids[start:start + 1000]
+        # only questions in this examiner's own bank can be touched, whatever ids were sent
+        chunk = [i for (i,) in my_bank(db.query(Question.id), user).filter(Question.id.in_(chunk))]
+        if not chunk:
+            continue
         _refuse_if_locked(db, chunk)
         db.query(ExamPaperItem).filter(ExamPaperItem.question_id.in_(chunk)).delete(synchronize_session=False)
-        deleted += (scoped(db.query(Question), Question, user)
+        deleted += (my_bank(db.query(Question), user)
                     .filter(Question.id.in_(chunk)).delete(synchronize_session=False))
     # a paper with no questions left is useless; removing it also detaches it from draft exams
     empty = scoped(db.query(ExamPaper), ExamPaper, user).filter(
@@ -187,7 +192,7 @@ def bulk_delete_questions(
 ):
     """Delete the ticked questions, or every question matching the filters (all_matching=true)."""
     if body.all_matching:
-        query = _apply_filters(scoped(db.query(Question.id), Question, user),
+        query = _apply_filters(my_bank(db.query(Question.id), user),
                                body.subject, body.topic, body.difficulty, body.q)
         ids = [i for (i,) in query.all()]
     else:
@@ -205,7 +210,7 @@ def delete_question(
     db: Session = Depends(get_db),
     user: User = Depends(bank_user),
 ):
-    obj = scoped(db.query(Question), Question, user).filter(Question.id == question_id).first()
+    obj = my_bank(db.query(Question), user).filter(Question.id == question_id).first()
     if not obj:
         raise HTTPException(404, "Question not found.")
     _refuse_if_locked(db, [question_id])

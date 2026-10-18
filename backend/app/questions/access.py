@@ -7,6 +7,8 @@ from fastapi import HTTPException
 from app.auth.dependencies import require_role
 from app.auth.models import User
 
+from .models import Question
+
 # Examiners build the question bank and papers (create / edit / delete / import).
 bank_user = require_role("examiner", "super_admin")
 
@@ -33,3 +35,14 @@ def scoped(query, model, user: User):
 def same_org(model, org_id):
     """Filter for the bucket new rows are written into (used for duplicate checks)."""
     return model.organization_id.is_(None) if org_id is None else model.organization_id == org_id
+
+
+def my_bank(query, user: User):
+    """The questions this user may see and use.
+    - examiner: only the questions they imported themselves (every examiner has a PRIVATE question bank)
+    - super_admin: every question of their organization
+    Papers are different: they are shared with every examiner of the organization (see `scoped`)."""
+    query = scoped(query, Question, user)
+    if user.role.name == "examiner":
+        query = query.filter(Question.created_by == user.id)
+    return query
