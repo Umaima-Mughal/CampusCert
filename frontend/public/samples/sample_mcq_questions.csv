@@ -1,0 +1,31 @@
+﻿Subject,Difficulty,Topic,Question,Option A,Option B,Option C,Option D,Correct Answer,Solution
+Physics,Easy,Kinematics,What is the SI unit of velocity?,m/s,km/h,m/s^2,kg·m/s,A,"Velocity is displacement divided by time, so its SI unit is metres per second (m/s)."
+Physics,Easy,Kinematics,Which of these quantities has both magnitude and direction?,Speed,Displacement,Distance,Mass,B,"Displacement is a vector. Speed, distance and mass are scalars."
+Physics,Medium,Kinematics,A car accelerates from rest at 2 m/s^2 for 5 s. How far does it travel?,10 m,50 m,25 m,5 m,C,s = ut + (1/2)at^2 = 0 + (1/2)(2)(5^2) = 25 m.
+Physics,Medium,Dynamics,What net force is needed to accelerate a 5 kg mass at 3 m/s^2?,8 N,1.67 N,2 N,15 N,D,Newton's second law: F = ma = 5 x 3 = 15 N.
+Physics,Hard,Thermodynamics,A Carnot engine works between 600 K and 300 K. What is its efficiency?,50%,25%,75%,100%,A,"Efficiency = 1 - Tc/Th = 1 - 300/600 = 0.5, i.e. 50%."
+Physics,Easy,Electricity,What is the SI unit of electrical resistance?,Volt,Ohm,Ampere,Watt,B,"Resistance is measured in ohms. Volt is potential difference, ampere is current, watt is power."
+Physics,Medium,Electricity,A 12 V battery is connected across a 4 ohm resistor. What current flows?,48 A,0.33 A,3 A,8 A,C,Ohm's law: I = V/R = 12/4 = 3 A.
+Physics,Hard,Waves,A wave has frequency 50 Hz and speed 340 m/s. What is its wavelength?,0.147 m,17000 m,3.4 m,6.8 m,D,"v = f x wavelength, so wavelength = 340/50 = 6.8 m."
+Mathematics,Easy,Algebra,Solve for x: 2x + 6 = 14.,4,3,5,10,A,"Subtract 6 from both sides: 2x = 8, so x = 4."
+Mathematics,Easy,Algebra,What is the value of 3^2 + 4^2?,12,25,49,14,B,"3^2 = 9 and 4^2 = 16, and 9 + 16 = 25."
+Mathematics,Medium,Algebra,What are the roots of x^2 - 5x + 6 = 0?,1 and 6,-2 and -3,2 and 3,5 and 1,C,"Factorise: (x - 2)(x - 3) = 0, so x = 2 or x = 3."
+Mathematics,Medium,Calculus,What is the derivative of x^3?,3x,x^2,x^4/4,3x^2,D,"Power rule: d/dx x^n = n x^(n-1), so d/dx x^3 = 3x^2."
+Mathematics,Hard,Calculus,What is the value of the integral of 2x dx from 0 to 1?,1,0,2,1/2,A,The antiderivative of 2x is x^2. Evaluate from 0 to 1: 1 - 0 = 1.
+Mathematics,Medium,Geometry,What is the area of a circle of radius 7 (use pi = 22/7)?,44,154,49,22,B,Area = pi r^2 = (22/7) x 49 = 154.
+Mathematics,Easy,Geometry,What is the sum of the interior angles of a triangle?,90 degrees,270 degrees,180 degrees,360 degrees,C,The interior angles of any triangle always add up to 180 degrees.
+Mathematics,Hard,Probability,Two fair dice are rolled. What is the probability that the sum is 7?,1/12,1/9,1/36,1/6,D,"Six of the 36 equally likely outcomes sum to 7, so P = 6/36 = 1/6."
+Computer Science,Easy,Data Structures,Which data structure follows the First-In-First-Out (FIFO) rule?,Queue,Stack,Tree,Graph,A,A queue removes the element that was added first. A stack is Last-In-First-Out.
+Computer Science,Easy,Number Systems,What is the decimal number 5 in binary?,100,101,110,111,B,"5 = 4 + 1 = 2^2 + 2^0, which is 101 in binary."
+Computer Science,Medium,Algorithms,What is the worst-case time complexity of binary search on a sorted array?,O(n),O(n log n),O(log n),O(1),C,"Each step halves the search range, so at most log2(n) steps are needed."
+Computer Science,Medium,Databases,Which SQL command quickly removes all rows from a table but keeps the table itself?,DROP TABLE,DELETE TABLE,REMOVE TABLE,TRUNCATE TABLE,D,TRUNCATE TABLE empties the table and keeps its structure. DROP TABLE removes the table entirely.
+Computer Science,Hard,Algorithms,Why does Dijkstra's algorithm fail on graphs with negative edge weights?,"It treats a node as final once it is the closest unvisited node, which a later negative edge can make wrong",It runs out of memory on large graphs,It cannot handle more than 100 nodes,It only works on trees,A,"Dijkstra assumes that once a node is chosen its distance is final. A negative edge found later can give a shorter path, breaking that assumption."
+Computer Science,Medium,Networking,Which protocol is used to browse websites securely?,HTTP,HTTPS,FTP,SMTP,B,"HTTPS is HTTP over TLS/SSL, so traffic between browser and website is encrypted."
+Computer Science,Hard,Data Structures,What is the height of a balanced binary search tree with n nodes?,O(n),O(n^2),O(log n),O(1),C,"Balancing keeps the two sides about equal, so the height grows like log2(n)."
+Biology,Easy,Cell Biology,Which organelle is known as the powerhouse of the cell?,Nucleus,Ribosome,Golgi body,Mitochondrion,D,"Mitochondria release energy from glucose by respiration, producing most of the cell's ATP."
+Biology,Easy,Cell Biology,In which organelle does photosynthesis take place?,Chloroplast,Mitochondrion,Vacuole,Lysosome,A,"Chloroplasts contain chlorophyll, which captures light energy for photosynthesis."
+Biology,Medium,Genetics,"In a cross between two heterozygous plants (Tt x Tt), what percentage of offspring are expected to be tt?",0%,25%,50%,75%,B,"The Punnett square gives TT, Tt, Tt, tt in the ratio 1:2:1, so tt is 1 in 4 = 25%."
+Biology,Medium,Ecology,"In a food chain, which of these is a primary consumer?",Grass,Fox,Rabbit,Mushroom,C,"Primary consumers eat producers. A rabbit eats grass, so it is a primary consumer."
+Biology,Hard,Cell Biology,A plant cell is placed in pure water. What happens?,Water leaves and the cell becomes plasmolysed,There is no net movement of water,The cell bursts because it has no cell wall,Water enters by osmosis and the cell becomes turgid,D,"Pure water has a higher water potential than the cell, so water enters. The cell wall stops it bursting and the cell becomes firm (turgid)."
+Biology,Easy,Genetics,What does DNA stand for?,Deoxyribonucleic acid,Dinucleic acid,Deoxyribose nucleic anhydride,Diribonucleic acid,A,"DNA is short for deoxyribonucleic acid, the molecule that carries genetic information."
+Biology,Medium,Genetics,Which base pairs with adenine in DNA?,Guanine,Thymine,Cytosine,Uracil,B,"In DNA, adenine always pairs with thymine (A-T) and guanine pairs with cytosine (G-C)."
