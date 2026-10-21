@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import PaperPicker from "../questionbank/PaperPicker";
 import { createExam, fetchExam, updateExam } from "../api/exams";
 import {
   apiErrorMessage,
@@ -27,6 +28,8 @@ export default function ExamForm() {
   const { examId } = useParams();
   const isEdit = Boolean(examId);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [paperId, setPaperId] = useState(searchParams.get("paper") || "");   // question paper (Member 3)
   const [form, setForm] = useState(emptyForm);
   const [distribution, setDistribution] = useState([{ subjectId: "", count: "" }]);
   const [error, setError] = useState("");
@@ -52,6 +55,7 @@ export default function ExamForm() {
           starts_at: toDateTimeLocal(exam.starts_at),
           ends_at: toDateTimeLocal(exam.ends_at),
         });
+        setPaperId(exam.paper_id ? String(exam.paper_id) : "");
         const entries = distributionEntries(exam.distribution);
         setDistribution(entries.length ? entries : [{ subjectId: "", count: "" }]);
       })
@@ -112,6 +116,7 @@ if (
       starts_at: toIsoOrNull(form.starts_at),
       ends_at: toIsoOrNull(form.ends_at),
       distribution: entriesToDistribution(distribution),
+      paper_id: paperId ? Number(paperId) : null,
     };
 
     if ((payload.starts_at && !payload.ends_at) || (!payload.starts_at && payload.ends_at)) {
@@ -263,6 +268,24 @@ if (
               onChange={(e) => updateField("instructions", e.target.value)}
               placeholder="Instructions displayed before the attempt starts."
             />
+          </div>
+          <div className="admin-field full">
+            <label htmlFor="paper">Question paper</label>
+            <PaperPicker
+              id="paper"
+              value={paperId}
+              onChange={(id, paper) => {
+                setPaperId(id);
+                if (!isEdit && paper?.duration_minutes) updateField("duration_minutes", paper.duration_minutes);
+              }}
+              onInitialPaper={(paper) => {
+                if (!isEdit && paper?.duration_minutes) updateField("duration_minutes", paper.duration_minutes);
+              }}
+            />
+            <p className="admin-help">
+              The questions students will see, built in the question bank. An exam needs a paper
+              before it can be activated.
+            </p>
           </div>
           <div className="admin-field full">
             <label>Question distribution</label>

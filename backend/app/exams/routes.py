@@ -100,7 +100,7 @@ def get_exam(
     current_user: User = Depends(admin_user),
 ):
     exam = services.get_exam_for_admin(db, current_user, exam_id)
-    return serialize_exam(exam, services.candidate_count(db, exam.id))
+    return serialize_exam(exam, services.candidate_count(db, exam.id), services.exam_flags(db, exam))
 
 
 @router.patch("/{exam_id}", response_model=ExamOut)
@@ -112,7 +112,7 @@ def update_exam(
 ):
     exam = services.get_exam_for_admin(db, current_user, exam_id)
     exam = services.update_exam(db, exam, payload)
-    return serialize_exam(exam, services.candidate_count(db, exam.id))
+    return serialize_exam(exam, services.candidate_count(db, exam.id), services.exam_flags(db, exam))
 
 
 @router.delete("/{exam_id}", status_code=status.HTTP_204_NO_CONTENT)

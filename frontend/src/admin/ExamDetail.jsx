@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import ExamPaperCard from "../questionbank/ExamPaperCard";
 import {
   activateExam,
   archiveExam,
@@ -12,6 +13,7 @@ import {
   fetchExamCandidates,
   removeExamCandidate,
   scheduleExam,
+  updateExam,
 } from "../api/exams";
 import {
   apiErrorMessage,
@@ -101,7 +103,10 @@ export default function ExamDetail() {
   }
 
   async function handleDelete() {
-    if (!window.confirm(`Delete draft exam “${exam.name}”?`)) return;
+    const people = candidates.length
+      ? ` ${candidates.length} assigned candidate${candidates.length === 1 ? "" : "s"} will be removed from it.`
+      : "";
+    if (!window.confirm(`Delete exam “${exam.name}”?${people} This can't be undone.`)) return;
     setBusy("delete");
     setError("");
     try {
@@ -120,6 +125,7 @@ export default function ExamDetail() {
   const available = eligible.filter((item) => !assignedIds.has(item.id));
   const canConfigure = exam.status === "DRAFT" || exam.status === "SCHEDULED";
   const distribution = Object.entries(exam.distribution || {});
+  const paperIsEmpty = exam.paper_question_count === 0 && distribution.length === 0;
 
   return (
     <div>
@@ -170,6 +176,17 @@ export default function ExamDetail() {
           {exam.instructions && (
             <p className="admin-muted" style={{ marginTop: 12 }}><strong>Instructions:</strong> {exam.instructions}</p>
           )}
+          <ExamPaperCard
+            paperId={exam.paper_id}
+            examDuration={exam.duration_minutes}
+            canAssign={exam.can_change_paper ?? canConfigure}
+            status={exam.status}
+            busy={busy === "paper"}
+            onAssign={(paperId) =>
+              runAction("paper", () => updateExam(exam.id, { paper_id: paperId }),
+                paperId ? "Question paper assigned." : "Question paper removed.")
+            }
+          />
           <div style={{ marginTop: 16 }}>
             <h4>Question distribution</h4>
             {distribution.length === 0 ? (
@@ -197,7 +214,8 @@ export default function ExamDetail() {
               <button
                 type="button"
                 className="admin-btn"
-                disabled={Boolean(busy)}
+                disabled={Boolean(busy) || paperIsEmpty}
+                title={paperIsEmpty ? "Add questions to the paper before activating" : undefined}
                 onClick={() => runAction("activate", () => activateExam(exam.id), "Exam is now active.")}
               >
                 {busy === "activate" ? "Activating..." : "Activate"}
@@ -233,17 +251,22 @@ export default function ExamDetail() {
                 Archive
               </button>
             )}
-            {exam.status === "DRAFT" && (
+            {exam.can_delete && (
               <button
                 type="button"
                 className="admin-btn danger"
                 disabled={Boolean(busy)}
                 onClick={handleDelete}
               >
-                Delete draft
+                {exam.status === "DRAFT" ? "Delete draft" : "Delete exam"}
               </button>
             )}
           </div>
+          {paperIsEmpty && (exam.status === "DRAFT" || exam.status === "SCHEDULED") && (
+            <p className="admin-help" style={{ marginTop: 10 }}>
+              The attached paper has no questions yet, so this exam can't be activated.
+            </p>
+          )}
 
           {canConfigure && (
             <form onSubmit={handleSchedule} style={{ marginTop: 20 }}>

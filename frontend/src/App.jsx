@@ -11,6 +11,7 @@
  *   <Route path="/examiner/*" element={<ExaminerDashboard />} />
  * Since this file is shared, give the team a heads-up before editing it.
  */
+import QuestionBank from './questionbank/QuestionBank'
 import OrganizationOnboardPage from "./auth/OrganizationOnboardPage";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
@@ -21,6 +22,7 @@ const ADMIN_ROLES = ["admin", "super_admin"];
 
 function postLoginPath(user) {
   if (user && ADMIN_ROLES.includes(user.role)) return "/admin";
+  if (user && user.role === "examiner") return "/question-bank";
   return "/";
 }
 
@@ -51,6 +53,7 @@ function HomePage() {
   if (loading) return <p style={{ textAlign: "center", marginTop: "40px" }}>Loading...</p>;
   if (!user) return <Navigate to="/login" replace />;
   if (ADMIN_ROLES.includes(user.role)) return <Navigate to="/admin" replace />;
+  if (user.role === "examiner") return <Navigate to="/question-bank" replace />;
 
   return (
     <div style={{ padding: "40px", textAlign: "center", color: "#fff", background: "#030712", minHeight: "100vh" }}>
@@ -70,7 +73,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginRoute />} />
           <Route path="/register" element={<RegisterRoute />} />
-          <Route path="/organization/onboard" element={<OrganizationOnboardPage />} /> 
+          <Route path="/organization/onboard" element={<OrganizationOnboardPage />} />
+          <Route path="/question-bank" element={<QuestionBank />} /> 
           <Route path="/admin/*" element={<AdminRoutes />} />
           <Route path="/" element={<HomePage />} />
         </Routes>
