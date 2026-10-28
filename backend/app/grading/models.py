@@ -4,7 +4,7 @@ from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Index, Inte
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from app.core.base_model import BaseModel
-from app.attempts.models import (
+from app.attempts.models import (  # noqa: F401
     ExamAttempt,
     utcnow,
 )  # noqa: F401  (ExamAttempt registers exam_attempts for the FK)
