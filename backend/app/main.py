@@ -44,3 +44,8 @@ def health_check():
 # --- Question bank (Member 3) ---
 from app.questions.router import router as questions_router  # noqa: E402
 app.include_router(questions_router, prefix="/api/v1")
+
+from app.attempts.routes import router as attempts_router  # noqa: E402
+from app.grading.routes import router as results_router  # noqa: E402
+app.include_router(attempts_router)
+app.include_router(results_router)
