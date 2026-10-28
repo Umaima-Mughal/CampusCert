@@ -1,0 +1,309 @@
+/**
+ * src/shared/styles/portal-theme.css
+ *
+ * Traditional institutional portal look for CampusCert — a top banner,
+ * a role-tabbed login card, and clean boxed form fields. Modeled after
+ * classic university portal logins (NED, etc.) rather than a modern
+ * SaaS dark theme.
+ *
+ * Import this ONCE in src/main.jsx.
+ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --cc-navy:      #1e3a5f;
+  --cc-navy-dark: #142a45;
+  --cc-red:       #c0392b;
+  --cc-red-dark:  #a93226;
+  --cc-blue-link: #2563eb;
+  --cc-green:     #16a34a;
+
+  --cc-bg-page:   #f1f5f9;
+  --cc-bg-card:   #ffffff;
+  --cc-bg-field:  #f8fafc;
+
+  --cc-border:      #d8dee6;
+  --cc-text-primary:   #1f2937;
+  --cc-text-secondary: #4b5563;
+  --cc-text-muted:     #6b7280;
+
+  --cc-font: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --cc-r-sm: 4px;
+  --cc-r-md: 6px;
+  --cc-tr: 0.15s ease;
+}
+
+html, body, #root {
+  height: 100%;
+  font-family: var(--cc-font);
+  background: var(--cc-bg-page);
+  color: var(--cc-text-primary);
+}
+
+/* ============ TOP BANNER ============ */
+
+.cc-portal-banner {
+  width: 100%;
+  background: linear-gradient(180deg, var(--cc-navy) 0%, var(--cc-navy-dark) 100%);
+  padding: 18px 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.cc-portal-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  border: 3px solid #cbd5e1;
+}
+
+.cc-portal-title {
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.cc-portal-subtitle {
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* ============ PAGE BACKGROUND ============ */
+
+.cc-portal-page {
+  min-height: 100vh;
+  width: 100%;
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.75), rgba(30, 58, 95, 0.55)),
+    url('../assets/auth-background.jpg') center/cover no-repeat fixed;
+  display: flex;
+  flex-direction: column;
+}
+
+.cc-portal-title,
+.cc-portal-subtitle {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.cc-portal-body {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 56px 20px;
+}
+
+/* ============ LOGIN CARD ============ */
+
+.cc-portal-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--cc-bg-card);
+  border-radius: var(--cc-r-md);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.15);
+  overflow: hidden;
+  border: 1px solid var(--cc-border);
+}
+
+.cc-portal-card-header {
+  background: linear-gradient(180deg, var(--cc-red), var(--cc-red-dark));
+  color: #fff;
+  text-align: center;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* Role tabs */
+.cc-role-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--cc-border);
+}
+
+.cc-role-tab {
+  flex: 1;
+  padding: 13px 8px;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cc-text-secondary);
+  background: var(--cc-bg-field);
+  border: none;
+  border-right: 1px solid var(--cc-border);
+  cursor: pointer;
+  transition: var(--cc-tr);
+}
+
+.cc-role-tab:last-child { border-right: none; }
+
+.cc-role-tab.active {
+  background: var(--cc-bg-card);
+  color: var(--cc-navy);
+  box-shadow: inset 0 -2px 0 var(--cc-red);
+}
+
+.cc-role-tab:hover:not(.active) { background: #eef2f6; }
+
+.cc-portal-form-area { padding: 24px 26px 28px; }
+
+.cc-portal-role-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--cc-red);
+  margin-bottom: 12px;
+}
+
+.cc-portal-links-row {
+  background: #f3f4f6;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  margin-bottom: 18px;
+  border-radius: var(--cc-r-sm);
+}
+
+.cc-portal-links-row a,
+.cc-portal-links-row button {
+  color: var(--cc-blue-link);
+  text-decoration: none;
+  background: none;
+  border: none;
+  font-size: 12.5px;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+.cc-portal-links-row .sep { color: var(--cc-text-muted); margin: 0 6px; }
+.cc-portal-links-row .notice { color: var(--cc-green); font-weight: 600; }
+
+/* ============ FORM FIELDS ============ */
+
+.cc-portal-field { margin-bottom: 16px; }
+
+.cc-portal-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--cc-blue-link);
+  margin-bottom: 6px;
+}
+
+.cc-portal-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--cc-border);
+  background: var(--cc-bg-field);
+  border-radius: var(--cc-r-sm);
+  font-size: 14px;
+  color: var(--cc-text-primary);
+  outline: none;
+  transition: var(--cc-tr);
+}
+
+.cc-portal-field input:focus {
+  border-color: var(--cc-navy);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.12);
+}
+
+.cc-portal-field input.cc-input-error { border-color: var(--cc-red); }
+
+.cc-portal-hint {
+  font-size: 11.5px;
+  color: var(--cc-text-muted);
+  margin-top: 4px;
+}
+
+.cc-field-error {
+  color: var(--cc-red);
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.cc-form-error {
+  background: #fdecea;
+  border: 1px solid #f5c6c0;
+  color: var(--cc-red-dark);
+  font-size: 13px;
+  padding: 9px 12px;
+  border-radius: var(--cc-r-sm);
+  margin-bottom: 16px;
+}
+
+/* ============ BUTTON ============ */
+
+.cc-portal-login-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--cc-r-sm);
+  border: none;
+  background: linear-gradient(180deg, var(--cc-red), var(--cc-red-dark));
+  color: #fff;
+  font-weight: 700;
+  font-size: 14.5px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: var(--cc-tr);
+  box-shadow: 0 2px 6px rgba(192, 57, 43, 0.35);
+}
+
+.cc-portal-login-btn:hover:not(:disabled) { background: var(--cc-red-dark); }
+.cc-portal-login-btn:active:not(:disabled) { transform: scale(0.98); }
+.cc-portal-login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.cc-portal-footer-note {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--cc-text-muted);
+  line-height: 1.7;
+}
+
+.cc-portal-footer-note a,
+.cc-portal-footer-note button {
+  color: var(--cc-blue-link);
+  font-weight: 600;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12.5px;
+  padding: 0;
+  font-family: inherit;
+}
+
+/* ============ BOTTOM STRIP ============ */
+
+.cc-portal-bottom-strip {
+  background: var(--cc-navy-dark);
+  color: #cbd5e1;
+  text-align: center;
+  padding: 12px;
+  font-size: 12px;
+}
+
+/* ============ RESPONSIVE ============ */
+
+@media (max-width: 480px) {
+  .cc-portal-banner { padding: 14px 18px; }
+  .cc-portal-title { font-size: 19px; }
+  .cc-portal-body { padding: 24px 12px; }
+  .cc-role-tab { font-size: 12px; padding: 11px 4px; }
+}
