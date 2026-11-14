@@ -1,0 +1,7 @@
+Subject,Difficulty,Topic,Question
+Physics,Easy,Kinematics,Define velocity and state its SI unit.
+Physics,Medium,Kinematics,A car accelerates from rest at 2 m/s^2 for 5 s. How far does it travel?
+Physics,Hard,Thermodynamics,Derive the efficiency of a Carnot engine operating between T1 and T2.
+Mathematics,Easy,Algebra,Solve for x: 2x + 6 = 14.
+Mathematics,Medium,Calculus,Find the derivative of f(x) = x^3 sin(x).
+Computer Science,Hard,Algorithms,Explain why Dijkstra's algorithm fails with negative edge weights.

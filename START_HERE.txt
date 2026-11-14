@@ -1,0 +1,18 @@
+CampusCert (repo-clean) - student portal included
+=================================================
+
+Full step-by-step guide:   docs\RUN_GUIDE.md      (open it in VS Code: Ctrl+Shift+V for the preview)
+
+Quick start on Windows (double-click or run from the VS Code terminal):
+
+  1. setup_windows.bat      one time: Python venv, backend packages, frontend packages, database check
+  2. run_migrations.bat     only if the database check reports missing tables
+  3. seed_demo.bat          optional: demo students, 3 demo exams (type YES when asked)
+  4. run_backend.bat        keep it open  ->  http://localhost:8000/docs
+  5. run_frontend.bat       second window ->  http://localhost:5173
+  6. run_all_checks.bat     database check + all backend tests + all frontend tests + build
+  7. live_check.bat         plays a student through the running app, login to graded result
+                            (live_check.bat --wait-expiry also tests automatic submit, about 70 seconds)
+  8. remove_demo.bat        deletes the demo data again
+
+Before step 1: put your own  backend\.env  in place (template: .env.example).

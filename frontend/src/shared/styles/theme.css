@@ -1,0 +1,474 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+html, body, #root { height: 100%; overflow-x: hidden; }
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Consistent, contained focus ring everywhere — no browser default
+   outline blowing past rounded corners or overlapping neighbors */
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid rgba(139, 92, 246, 0.6);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============ BACKGROUND ============ */
+
+.container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background-image: url('../../assets/background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(139,92,246,0.16), transparent 55%),
+    radial-gradient(circle at 88% 90%, rgba(6,182,212,0.14), transparent 55%),
+    rgba(2, 6, 16, 0.72);
+  background-size: 140% 140%, 140% 140%, 100% 100%;
+  z-index: 0;
+  animation: ambientDrift 18s ease-in-out infinite alternate;
+}
+
+@keyframes ambientDrift {
+  0%   { background-position: 0% 0%, 100% 100%, 0 0; }
+  100% { background-position: 8% 6%, 92% 94%, 0 0; }
+}
+
+/* Fine film-grain texture — the single biggest "this was designed, not
+   just styled" tell on dark glass UI. Pure CSS, no image asset needed. */
+.container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ============ CARD (GLASS EFFECT) ============ */
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 1050px;
+  min-height: 520px;
+  display: flex;
+  border-radius: 22px;
+  overflow: hidden;
+  backdrop-filter: blur(18px);
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 40px 90px rgba(0, 0, 0, 0.65),
+    0 2px 0 rgba(255, 255, 255, 0.04) inset;
+  z-index: 1;
+  animation: cardIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  pointer-events: none;
+  box-shadow: 0 0 90px rgba(99,102,241,0.10);
+}
+
+/* ============ LEFT PANEL ============ */
+
+.left-panel {
+  width: 50%;
+  padding: 48px 45px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 30px;
+  color: #e2e8f0;
+  position: relative;
+}
+
+/* subtle separation line so the two panels read as intentionally
+   different surfaces, not just a color change */
+.left-panel::after {
+  content: "";
+  position: absolute;
+  top: 8%;
+  bottom: 8%;
+  right: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.14), transparent);
+}
+
+/* BRAND */
+.brand { display: flex; align-items: center; gap: 13px; animation: fadeUp 0.6s 0.05s cubic-bezier(0.16,1,0.3,1) both; }
+.logo {
+  font-size: 21px;
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 20px rgba(139,92,246,0.4), 0 0 0 1px rgba(255,255,255,0.08) inset;
+  flex-shrink: 0;
+}
+.brand-text h3 {
+  font-size: 18px; font-weight: 700; color: #fff; letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.brand-text span {
+  font-size: 11.5px; color: #94a3b8; font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* HERO */
+.hero { display: flex; flex-direction: column; gap: 15px; animation: fadeUp 0.6s 0.15s cubic-bezier(0.16,1,0.3,1) both; }
+.hero h1 {
+  font-size: 33px; line-height: 1.28; color: #fff; font-weight: 800;
+  letter-spacing: -0.015em;
+}
+.hero h1 span {
+  background: linear-gradient(135deg, #a78bfa, #22d3ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero p {
+  font-size: 14px; color: rgba(203, 213, 225, 0.82); line-height: 1.7;
+  max-width: 34ch;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* FEATURES */
+.features { list-style: none; display: flex; flex-direction: column; gap: 13px; margin-top: 4px; }
+.features li {
+  font-size: 13.5px;
+  color: #cbd5e1;
+  line-height: 1.55;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+}
+.features li:nth-child(1) { animation-delay: 0.25s; }
+.features li:nth-child(2) { animation-delay: 0.34s; }
+.features li:nth-child(3) { animation-delay: 0.43s; }
+.features li:hover {
+  background: rgba(139,92,246,0.08);
+  border-color: rgba(139,92,246,0.22);
+  transform: translateX(3px);
+}
+
+/* ============ RIGHT PANEL ============ */
+
+.right-panel {
+  width: 50%;
+  padding: 0 0 40px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(22px);
+}
+
+/* PORTAL-STYLE TOP BANNER */
+.portal-topbar {
+  background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+  padding: 17px 20px;
+  text-align: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15.5px;
+  letter-spacing: 0.03em;
+  box-shadow: 0 2px 16px rgba(139,92,246,0.3);
+  position: relative;
+}
+
+/* ROLE TABS */
+.role-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.015);
+}
+.role-tab {
+  flex: 1;
+  padding: 13px 8px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #8894a8;
+  background: transparent;
+  border: none;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  position: relative;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.role-tab:last-child { border-right: none; }
+.role-tab:hover:not(.active) { background: rgba(139,92,246,0.06); color: #cbd5e1; }
+.role-tab.active { color: #fff; background: rgba(139,92,246,0.12); }
+.role-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 14%; right: 14%; bottom: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+}
+
+.right-panel-body { padding: 34px 40px 0; flex: 1; display: flex; flex-direction: column; }
+
+.auth-container {
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+  max-width: 340px; width: 100%; margin: 0 auto;
+  animation: fadeUp 0.6s 0.2s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* SWITCH (Sign In / Register) */
+.switch {
+  display: flex; gap: 4px; margin-bottom: 28px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 4px;
+}
+.switch button {
+  flex: 1;
+  padding: 9px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #8894a8;
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+.switch button.active {
+  color: #fff;
+  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+  box-shadow: 0 4px 14px rgba(139,92,246,0.35);
+}
+
+/* FORM */
+.form { display: flex; flex-direction: column; gap: 4px; }
+.form h2 { color: #fff; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.subtitle { font-size: 13px; color: #94a3b8; margin-bottom: 22px; line-height: 1.5; }
+
+/* INPUT */
+.input-group { position: relative; margin-bottom: 16px; z-index: 5; }
+.input-group input {
+  width: 100%;
+  padding: 13px 14px 13px 44px;
+  border-radius: 11px;
+  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(255,255,255,0.045);
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.input-group input:hover { border-color: rgba(255,255,255,0.16); }
+.input-group input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+  background: rgba(255,255,255,0.07);
+}
+.input-group input::placeholder { color: #64748b; }
+
+/* Neutralize Chrome's yellow autofill background so it matches the theme */
+.input-group input:-webkit-autofill,
+.input-group input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #fff;
+  -webkit-box-shadow: 0 0 0 1000px rgba(30, 34, 50, 0.95) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 15px;
+  z-index: 10;
+  pointer-events: none;
+  line-height: 1;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+/* the icon "wakes up" when its field is focused — a small detail that
+   quietly tells the user exactly where they're typing */
+.input-group:focus-within .input-icon {
+  color: #a78bfa;
+  transform: translateY(-50%) scale(1.08);
+}
+
+/* PASSWORD EYE */
+.eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8894a8;
+  font-size: 14px;
+  background: none;
+  border: none;
+  z-index: 10;
+  padding: 6px;
+  border-radius: 6px;
+  line-height: 1;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.eye:hover { color: #fff; background: rgba(255,255,255,0.06); }
+
+/* BUTTON */
+.btn-primary {
+  width: 100%;
+  padding: 13px;
+  border-radius: 11px;
+  border: none;
+  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+  color: white;
+  font-weight: 600;
+  font-size: 14.5px;
+  letter-spacing: 0.01em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  margin-top: 10px;
+  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.28);
+  position: relative;
+  overflow: hidden;
+}
+/* diagonal light sweep on hover — subtle, not gimmicky */
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  top: 0; left: -60%;
+  width: 40%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.55s ease;
+}
+.btn-primary:hover:not(:disabled)::before { left: 130%; }
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(139, 92, 246, 0.42);
+  filter: brightness(1.05);
+}
+.btn-primary:active:not(:disabled) { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+
+/* ERROR */
+.form-error {
+  background: rgba(239,68,68,0.10);
+  border: 1px solid rgba(239,68,68,0.28);
+  color: #fca5a5;
+  font-size: 12.5px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  margin-bottom: 4px;
+  line-height: 1.5;
+  animation: shakeIn 0.3s ease;
+}
+@keyframes shakeIn {
+  0% { opacity: 0; transform: translateY(-4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* TEXT LINKS */
+.switch-text { margin-top: 18px; font-size: 13px; color: #8894a8; text-align: center; }
+.switch-text span, .switch-text button {
+  color: #a78bfa;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+.switch-text span:hover, .switch-text button:hover { color: #22d3ee; text-decoration: underline; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(15,23,42,0.3); }
+::-webkit-scrollbar-thumb { background: #8b5cf6; border-radius: 10px; }
+
+/* ============ RESPONSIVE ============ */
+
+@media (max-width: 900px) {
+  .container { padding: 0; align-items: flex-start; }
+  .card { flex-direction: column; max-width: 100%; border-radius: 0; min-height: 100vh; box-shadow: none; animation: none; }
+  .left-panel { display: none; }
+  .right-panel { width: 100%; padding: 0 0 32px; }
+  .right-panel-body { padding: 26px 24px 0; }
+  .auth-container { max-width: 420px; }
+}
+
+@media (max-width: 420px) {
+  .hero h1 { font-size: 26px; }
+  .right-panel-body { padding: 20px 16px 0; }
+
+  .portal-topbar { font-size: 14px; padding: 13px 12px; }
+
+  .role-tab { font-size: 11.5px; padding: 10px 4px; }
+
+  .switch { gap: 3px; margin-bottom: 22px; }
+  .switch button { font-size: 13px; padding: 8px; }
+
+  .form h2 { font-size: 19px; }
+  .subtitle { font-size: 12.5px; }
+
+  .input-group input { padding: 12px 12px 12px 40px; font-size: 13.5px; }
+  .input-icon { font-size: 14px; left: 12px; }
+  .eye { right: 10px; font-size: 13px; }
+
+  .btn-primary { font-size: 14px; padding: 12px; }
+}
