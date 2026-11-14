@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 /* RESET */
 * {
   margin: 0;
@@ -7,9 +9,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-html, body, #root { height: 100%; overflow-x: hidden; }
+html, body, #root {
+  height: 100%;
+  overflow-x: hidden;
+}
 
 body {
   -webkit-font-smoothing: antialiased;

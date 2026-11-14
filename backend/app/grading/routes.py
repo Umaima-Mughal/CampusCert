@@ -19,6 +19,8 @@ from app.core.database import get_db
 from app.exams.constants import STUDENT_ROLE
 from app.exams.models import Exam
 from app.questions.models import Question
+from app.attempts.models import AnswerLog
+from app.security.models import ExamEvent
 
 from .models import Result
 
@@ -107,5 +109,43 @@ def get_result(
 
     out = _summary(result, exam.name, attempt)
     out["passing_score"] = exam.passing_score
+    # out["breakdown"] = breakdown
+    # return out
+
     out["breakdown"] = breakdown
+
+    # Security audit details are for authorized staff only.
+    if role in STAFF_ROLES:
+        timeline = []
+
+        answer_logs = db.query(AnswerLog).filter(
+            AnswerLog.attempt_id == attempt.id
+        ).all()
+
+        for log in answer_logs:
+            timeline.append({
+                "at": log.saved_at,
+                "type": "ANSWER_SAVED",
+                "question_id": log.question_id,
+                "actor_id": None,
+            })
+
+        integrity_events = db.query(ExamEvent).filter(
+            ExamEvent.attempt_id == attempt.id
+        ).all()
+
+        for event in integrity_events:
+            timeline.append({
+                "at": event.occurred_at,
+                "type": event.event_type,
+                "actor_id": event.actor_id,
+                "note": event.note,
+            })
+
+        timeline.sort(
+            key=lambda item: item["at"]
+        )
+
+        out["audit_trail"] = timeline
+
     return out

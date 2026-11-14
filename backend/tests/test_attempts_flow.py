@@ -1,6 +1,7 @@
 """Attempt lifecycle (Member 4): start -> answer -> submit -> grade. In-memory SQLite, no Postgres."""
 from datetime import datetime, timedelta
 
+import uuid
 import pytest
 from fastapi import HTTPException
 from sqlalchemy import create_engine
@@ -206,3 +207,204 @@ def test_my_exams_lists_only_assigned_exams_with_start_flag(db, world):
     rows = services.list_my_exams(db, world["student"])
     assert len(rows) == 1 and rows[0]["can_start"] is True
     assert services.list_my_exams(db, world["other"]) == []
+
+
+# --- Member 5: Security workflow integration tests ---
+
+from app.security.models import ExamEvent
+from app.security.routes import (
+    EventIn,
+    ActionIn,
+    record_integrity_event,
+    resume_attempt,
+    terminate_attempt,
+)
+
+
+def test_security_freeze_resume_terminate(db, world):
+    student = world["student"]
+    admin = db.query(User).filter(
+        User.email == "a@x.edu"
+    ).one()
+
+    attempt = services.start_attempt(
+        db, student, world["exam"].id
+    )
+
+    # 1. Student exits fullscreen
+    response = record_integrity_event(
+        EventIn(
+            attempt_id=attempt.id,
+            type="FULLSCREEN_EXIT",
+        ),
+        db=db,
+        user=student,
+    )
+
+    assert response["frozen"] is True
+    db.refresh(attempt)
+    assert attempt.status == "FROZEN"
+
+    # 2. Examiner resumes the attempt
+    resume_attempt(
+        attempt.id,
+        ActionIn(reason="Reviewed incident"),
+        db=db,
+        user=admin,
+    )
+
+    db.refresh(attempt)
+    assert attempt.status == "ACTIVE"
+
+    # 3. Examiner terminates and grades
+    terminate_attempt(
+        attempt.id,
+        ActionIn(reason="Examiner decision"),
+        db=db,
+        user=admin,
+    )
+
+    db.refresh(attempt)
+    assert attempt.status == "TERMINATED"
+
+    # 4. Result must exist
+    result = db.query(Result).filter_by(
+        attempt_id=attempt.id
+    ).one_or_none()
+
+    assert result is not None
+
+    # 5. Audit records must be saved
+    events = db.query(ExamEvent).filter_by(
+        attempt_id=attempt.id
+    ).all()
+
+    event_types = [e.event_type for e in events]
+
+    assert "FULLSCREEN_EXIT" in event_types
+    assert "FROZEN" in event_types
+    assert "RESUMED" in event_types
+    assert "TERMINATED" in event_types
+
+
+def test_student_cannot_record_other_attempt(db, world):
+    student = world["student"]
+    other = world["other"]
+
+    attempt = services.start_attempt(
+        db, student, world["exam"].id
+    )
+
+    with pytest.raises(HTTPException) as exc:
+        record_integrity_event(
+            EventIn(
+                attempt_id=attempt.id,
+                type="TAB_SWITCH",
+            ),
+            db=db,
+            user=other,
+        )
+
+    assert exc.value.status_code == 404
+
+    assert db.query(ExamEvent).filter_by(
+        attempt_id=attempt.id
+    ).count() == 0
+
+
+def test_frozen_exam_rejects_answer_submission(db, world):
+    student = world["student"]
+
+    attempt = services.start_attempt(
+        db, student, world["exam"].id
+    )
+
+    record_integrity_event(
+        EventIn(
+            attempt_id=attempt.id,
+            type="FULLSCREEN_EXIT",
+        ),
+        db=db,
+        user=student,
+    )
+
+    db.refresh(attempt)
+    assert attempt.status == "FROZEN"
+
+    question_id = world["qids"][0]
+
+    with pytest.raises(HTTPException) as exc:
+        services.save_answer(
+            db,
+            student,
+            attempt.id,
+            AnswerIn(
+                question_id=question_id,
+                selected_option="A",
+            ),
+        )
+
+    assert exc.value.status_code == 409
+
+    assert db.query(AnswerLog).filter_by(
+        attempt_id=attempt.id
+    ).count() == 0
+
+
+def test_examiner_cannot_access_other_organization(
+    db, world
+):
+    student = world["student"]
+
+    attempt = services.start_attempt(
+        db, student, world["exam"].id
+    )
+
+    class FakeRole:
+        name = "examiner"
+
+    class FakeExaminer:
+        role = FakeRole()
+        organization_id = uuid.UUID("00000000-0000-0000-0000-000000000999")
+
+    from app.security.routes import get_staff_attempt
+
+    with pytest.raises(HTTPException) as exc:
+        get_staff_attempt(
+            db,
+            FakeExaminer(),
+            attempt.id,
+        )
+
+    assert exc.value.status_code == 404
+
+def test_duplicate_integrity_event_is_suppressed(db, world):
+    student = world["student"]
+
+    attempt = services.start_attempt(
+        db, student, world["exam"].id
+    )
+
+    payload = EventIn(
+        attempt_id=attempt.id,
+        type="TAB_SWITCH",
+    )
+
+    first = record_integrity_event(
+        payload, db=db, user=student
+    )
+
+    second = record_integrity_event(
+        payload, db=db, user=student
+    )
+
+    assert first["recorded"] is True
+    assert second["recorded"] is False
+    assert second["duplicate"] is True
+
+    count = db.query(ExamEvent).filter(
+        ExamEvent.attempt_id == attempt.id,
+        ExamEvent.event_type == "TAB_SWITCH",
+    ).count()
+
+    assert count == 1

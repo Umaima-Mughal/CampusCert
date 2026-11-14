@@ -31,3 +31,5 @@ build/
 
 # Docker
 *.pid
+.venv312/
+CampusCert-source.zip
