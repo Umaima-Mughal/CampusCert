@@ -10,12 +10,13 @@ hardcoding things like DB URLs or secret keys.
 import os
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from pathlib import Path
 
 # Always point at backend/.env, no matter which folder a command is run
 # from (repo root, backend/, database/, etc.) — this fixes the common
 # "it works when I run uvicorn but not when I run alembic" issue.
-_ENV_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".env")
-
+# Load the shared .env file from the repository root.
+_ENV_FILE_PATH = Path(__file__).resolve().parents[3] / ".env"
 
 class Settings(BaseSettings):
     # --- App info ---
