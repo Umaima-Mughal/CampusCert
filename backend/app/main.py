@@ -47,8 +47,8 @@ app.include_router(questions_router, prefix="/api/v1")
 
 from app.attempts.routes import router as attempts_router  # noqa: E402
 from app.grading.routes import router as results_router  # noqa: E402
-from app.security.routes import router as security_router
-from app.analytics.routes import router as analytics_router
+from app.security.routes import router as security_router  # noqa: E402
+from app.analytics.routes import router as analytics_router  # noqa: E402
 app.include_router(attempts_router)
 app.include_router(results_router)
 app.include_router(security_router)

@@ -7,7 +7,6 @@ Everyone else in the team imports `settings` from here instead of
 hardcoding things like DB URLs or secret keys.
 """
 
-import os
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 from pathlib import Path
@@ -17,6 +16,7 @@ from pathlib import Path
 # "it works when I run uvicorn but not when I run alembic" issue.
 # Load the shared .env file from the repository root.
 _ENV_FILE_PATH = Path(__file__).resolve().parents[3] / ".env"
+
 
 class Settings(BaseSettings):
     # --- App info ---
@@ -30,8 +30,8 @@ class Settings(BaseSettings):
     # --- Auth / JWT ---
     JWT_SECRET_KEY: str = "change-this-in-.env"
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60          # short-lived login token
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7             # longer-lived refresh token
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # short-lived login token
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7  # longer-lived refresh token
 
     # --- CORS (so the frontend on a different port can talk to this API) ---
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]

@@ -1,4 +1,3 @@
-
 """Exam statistics and integrity event timeline."""
 
 import uuid
@@ -12,6 +11,8 @@ from app.core.database import get_db
 from app.exams.models import Exam
 from app.attempts.models import ExamAttempt, AnswerLog
 from app.security.models import ExamEvent
+from collections import defaultdict
+from app.auth.models import User as SecurityUser
 
 
 router = APIRouter(
@@ -19,20 +20,14 @@ router = APIRouter(
     tags=["analytics"],
 )
 
-staff_only = require_role(
-    "examiner", "admin", "super_admin"
-)
+staff_only = require_role("examiner", "admin", "super_admin")
 
 
 def get_authorized_exam(db, user, exam_id):
-    query = db.query(Exam).filter(
-        Exam.id == exam_id
-    )
+    query = db.query(Exam).filter(Exam.id == exam_id)
 
     if user.role.name != "super_admin":
-        query = query.filter(
-            Exam.organization_id == user.organization_id
-        )
+        query = query.filter(Exam.organization_id == user.organization_id)
 
     exam = query.first()
 
@@ -53,42 +48,36 @@ def exam_overview(
 ):
     get_authorized_exam(db, user, exam_id)
 
-    attempts = db.query(ExamAttempt).filter(
-        ExamAttempt.exam_id == exam_id
-    ).all()
+    attempts = db.query(ExamAttempt).filter(ExamAttempt.exam_id == exam_id).all()
 
     attempt_ids = [a.id for a in attempts]
 
     flagged = set()
 
     if attempt_ids:
-        event_rows = db.query(
-            ExamEvent.attempt_id
-        ).filter(
-            ExamEvent.attempt_id.in_(attempt_ids),
-            ExamEvent.event_type.in_([
-                "TAB_SWITCH",
-                "FULLSCREEN_EXIT",
-                "COPY_PASTE",
-            ]),
-        ).distinct().all()
+        event_rows = (
+            db.query(ExamEvent.attempt_id)
+            .filter(
+                ExamEvent.attempt_id.in_(attempt_ids),
+                ExamEvent.event_type.in_(
+                    [
+                        "TAB_SWITCH",
+                        "FULLSCREEN_EXIT",
+                        "COPY_PASTE",
+                    ]
+                ),
+            )
+            .distinct()
+            .all()
+        )
 
         flagged = {row[0] for row in event_rows}
 
     return {
-        "total_candidates": len({
-            a.candidate_id for a in attempts
-        }),
-        "active": sum(
-            a.status == "ACTIVE" for a in attempts
-        ),
-        "completed": sum(
-            a.status in ("SUBMITTED", "TERMINATED")
-            for a in attempts
-        ),
-        "frozen": sum(
-            a.status == "FROZEN" for a in attempts
-        ),
+        "total_candidates": len({a.candidate_id for a in attempts}),
+        "active": sum(a.status == "ACTIVE" for a in attempts),
+        "completed": sum(a.status in ("SUBMITTED", "TERMINATED") for a in attempts),
+        "frozen": sum(a.status == "FROZEN" for a in attempts),
         "flagged": len(flagged),
     }
 
@@ -107,34 +96,32 @@ def attempt_timeline(
             detail="Attempt not found",
         )
 
-    get_authorized_exam(
-        db, user, attempt.exam_id
-    )
+    get_authorized_exam(db, user, attempt.exam_id)
 
     timeline = []
 
-    answer_logs = db.query(AnswerLog).filter(
-        AnswerLog.attempt_id == attempt_id
-    ).all()
+    answer_logs = db.query(AnswerLog).filter(AnswerLog.attempt_id == attempt_id).all()
 
     for answer in answer_logs:
-        timeline.append({
-            "at": answer.saved_at,
-            "type": "ANSWER_SAVED",
-            "question_id": answer.question_id,
-        })
+        timeline.append(
+            {
+                "at": answer.saved_at,
+                "type": "ANSWER_SAVED",
+                "question_id": answer.question_id,
+            }
+        )
 
-    events = db.query(ExamEvent).filter(
-        ExamEvent.attempt_id == attempt_id
-    ).all()
+    events = db.query(ExamEvent).filter(ExamEvent.attempt_id == attempt_id).all()
 
     for event in events:
-        timeline.append({
-            "at": event.occurred_at,
-            "type": event.event_type,
-            "actor_id": event.actor_id,
-            "note": event.note,
-        })
+        timeline.append(
+            {
+                "at": event.occurred_at,
+                "type": event.event_type,
+                "actor_id": event.actor_id,
+                "note": event.note,
+            }
+        )
 
     timeline.sort(key=lambda item: item["at"])
 
@@ -144,12 +131,7 @@ def attempt_timeline(
     }
 
 
-
 # --- Member 5: Examiner security review queue ---
-
-from collections import defaultdict
-from sqlalchemy import func
-from app.auth.models import User as SecurityUser
 
 RISK_WEIGHTS = {
     "TAB_SWITCH": 10,
@@ -202,10 +184,7 @@ def security_review_queue(
     for attempt, candidate in attempts:
         history = grouped[attempt.id]
 
-        violations = [
-            e for e in history
-            if e.event_type in RISK_WEIGHTS
-        ]
+        violations = [e for e in history if e.event_type in RISK_WEIGHTS]
 
         if not violations:
             continue
@@ -213,10 +192,7 @@ def security_review_queue(
         # Illustrative review-priority score.
         risk_score = min(
             100,
-            sum(
-                RISK_WEIGHTS[e.event_type]
-                for e in violations
-            ),
+            sum(RISK_WEIGHTS[e.event_type] for e in violations),
         )
 
         latest = violations[-1]
@@ -228,19 +204,21 @@ def security_review_queue(
         else:
             risk_level = "LOW"
 
-        items.append({
-            "attempt_id": attempt.id,
-            "candidate_id": candidate.id,
-            "candidate_name": candidate.full_name,
-            "candidate_email": candidate.email,
-            "status": attempt.status,
-            "violation_count": len(violations),
-            "risk_score": risk_score,
-            "risk_level": risk_level,
-            "latest_event": latest.event_type,
-            "latest_event_at": latest.occurred_at,
-            "review_required": attempt.status == "FROZEN",
-        })
+        items.append(
+            {
+                "attempt_id": attempt.id,
+                "candidate_id": candidate.id,
+                "candidate_name": candidate.full_name,
+                "candidate_email": candidate.email,
+                "status": attempt.status,
+                "violation_count": len(violations),
+                "risk_score": risk_score,
+                "risk_level": risk_level,
+                "latest_event": latest.event_type,
+                "latest_event_at": latest.occurred_at,
+                "review_required": attempt.status == "FROZEN",
+            }
+        )
 
     items.sort(
         key=lambda item: (

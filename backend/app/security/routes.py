@@ -1,9 +1,9 @@
 
 """Secure exam integrity and examiner action endpoints."""
 
-
 import uuid
 from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
@@ -26,9 +26,7 @@ from .models import ExamEvent
 router = APIRouter(prefix="/api", tags=["integrity"])
 
 student_only = require_role("student")
-staff_only = require_role(
-    "examiner", "admin", "super_admin"
-)
+staff_only = require_role("examiner", "admin", "super_admin")
 
 INTEGRITY_EVENTS = {
     "TAB_SWITCH",
@@ -36,13 +34,14 @@ INTEGRITY_EVENTS = {
     "COPY_PASTE",
 }
 
-# Example policy. Confirm with your examiner/team.
+# Security policy: automatically freeze on these event types.
 FREEZE_ON = {
     "FULLSCREEN_EXIT",
     "COPY_PASTE",
 }
 
 DUPLICATE_COOLDOWN_SECONDS = 3
+
 
 class EventIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -56,13 +55,16 @@ class ActionIn(BaseModel):
 
 
 def get_staff_attempt(db, user, attempt_id):
+    """Get an attempt while enforcing staff organization access."""
+
     query = db.query(ExamAttempt).filter(
         ExamAttempt.id == attempt_id
     )
 
     if user.role.name != "super_admin":
         query = query.join(
-            Exam, Exam.id == ExamAttempt.exam_id
+            Exam,
+            Exam.id == ExamAttempt.exam_id,
         ).filter(
             Exam.organization_id == user.organization_id
         )
@@ -76,82 +78,6 @@ def get_staff_attempt(db, user, attempt_id):
         )
 
     return attempt
-
-
-@router.post("/events", status_code=201)
-# def record_integrity_event(
-#     body: EventIn,
-#     db: Session = Depends(get_db),
-#     user: User = Depends(student_only),
-# ):
-#     if body.type not in INTEGRITY_EVENTS:
-#         raise HTTPException(
-#             status_code=422,
-#             detail="Unsupported integrity event",
-#         )
-
-#     attempt = (
-#         db.query(ExamAttempt)
-#         .filter(
-#             ExamAttempt.id == body.attempt_id,
-#             ExamAttempt.candidate_id == user.id,
-#         )
-#         .with_for_update()
-#         .first()
-#     )
-
-#     if attempt is None:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="Attempt not found",
-#         )
-
-#     attempt_services.finish_if_time_is_up(db, attempt)
-
-#     if attempt.status in FINISHED_STATUSES:
-#         raise HTTPException(
-#             status_code=409,
-#             detail="Attempt already finalized",
-#         )
-
-#     if attempt.status not in (
-#         ATTEMPT_ACTIVE,
-#         ATTEMPT_FROZEN,
-#     ):
-#         raise HTTPException(
-#             status_code=409,
-#             detail="Attempt is not open",
-#         )
-
-#     event = ExamEvent(
-#         attempt_id=attempt.id,
-#         actor_id=user.id,
-#         event_type=body.type,
-#     )
-#     db.add(event)
-
-#     if (
-#         body.type in FREEZE_ON
-#         and attempt.status == ATTEMPT_ACTIVE
-#     ):
-#         attempt.status = ATTEMPT_FROZEN
-
-#         db.add(
-#             ExamEvent(
-#                 attempt_id=attempt.id,
-#                 actor_id=user.id,
-#                 event_type="FROZEN",
-#                 note="Configured integrity policy",
-#             )
-#         )
-
-#     db.commit()
-
-#     return {
-#         "recorded": True,
-#         "status": attempt.status,
-#         "frozen": attempt.status == ATTEMPT_FROZEN,
-#     }
 
 
 @router.post("/events", status_code=201)
@@ -199,7 +125,7 @@ def record_integrity_event(
             detail="Attempt is not open",
         )
 
-    # Server time, not a student-controlled timestamp.
+    # Use server time instead of a client-controlled timestamp.
     now = datetime.utcnow()
     cutoff = now - timedelta(
         seconds=DUPLICATE_COOLDOWN_SECONDS
@@ -271,7 +197,9 @@ def resume_attempt(
     user: User = Depends(staff_only),
 ):
     attempt = get_staff_attempt(
-        db, user, attempt_id
+        db,
+        user,
+        attempt_id,
     )
 
     attempt_services.finish_if_time_is_up(db, attempt)
@@ -309,7 +237,9 @@ def terminate_attempt(
     user: User = Depends(staff_only),
 ):
     attempt = get_staff_attempt(
-        db, user, attempt_id
+        db,
+        user,
+        attempt_id,
     )
 
     attempt_services.finish_if_time_is_up(db, attempt)
@@ -341,7 +271,9 @@ def terminate_attempt(
     db.flush()
 
     attempt_services.finalize_attempt(
-        db, attempt, "TERMINATED"
+        db,
+        attempt,
+        "TERMINATED",
     )
 
     return {
