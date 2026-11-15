@@ -3,8 +3,9 @@
 Flow: 1) plan call (title, subject, topics/difficulty/count)  2) question calls in small batches
 3) every question is validated with the SAME rules as file import  4) questions + paper are saved.
 """
+
 import re
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Tuple
 
 from sqlalchemy.orm import Session
 
@@ -18,8 +19,10 @@ from .config import AISettings, get_ai_settings
 from .groq_client import GroqError
 from .schemas import AIPaperRequest
 
-SYSTEM = ("You are a senior university exam paper setter. You answer with ONE valid JSON object and nothing else. "
-          "Write in the same language as the examiner's request.")
+SYSTEM = (
+    "You are a senior university exam paper setter. You answer with ONE valid JSON object and nothing else. "
+    "Write in the same language as the examiner's request."
+)
 DIFFS = ("easy", "medium", "hard")
 Chat = Callable[..., dict]
 
@@ -43,15 +46,19 @@ def make_plan(body: AIPaperRequest, cfg: AISettings) -> Tuple[dict, List[Tuple[s
     """Returns (plan dict, slots) where slots is a list of (topic, difficulty), one per question."""
     cap = max(1, cfg.AI_MAX_QUESTIONS)
     fixed = min(body.question_count, cap) if body.question_count else None
-    count_rule = (f"The paper must have exactly {fixed} questions." if fixed else
-                  f"If the request names a number of questions use it, otherwise use 10. Never more than {cap}.")
+    count_rule = (
+        f"The paper must have exactly {fixed} questions."
+        if fixed
+        else f"If the request names a number of questions use it, otherwise use 10. Never more than {cap}."
+    )
     user = (
         f'An examiner wants an exam paper. Their request:\n"""{body.prompt}"""\n\n'
         "Plan the paper. All questions are multiple choice. Reply with JSON exactly like:\n"
         '{"title": "short paper title", "subject": "subject name", '
         '"instructions": "2-3 sentences of instructions for students", "duration_minutes": 30, '
         '"total_questions": 10, "sections": [{"topic": "topic name", "difficulty": "easy", "count": 4}]}\n'
-        f"Rules: difficulty is easy, medium or hard. total_questions equals the sum of the section counts. {count_rule} "
+        f"Rules: difficulty is easy, medium or hard. total_questions equals the sum "
+        f"of the section counts. {count_rule} "
         "If the request asks for a difficulty split follow it, otherwise mix easy, medium and hard. "
         "Use real topics of the subject; 2 to 6 sections."
     )
@@ -78,7 +85,7 @@ def make_plan(body: AIPaperRequest, cfg: AISettings) -> Tuple[dict, List[Tuple[s
     if not slots:
         slots = [(subject, d) for d in ("easy", "medium", "hard")]
     base, i = list(slots), 0
-    while len(slots) < target:                 # pad by cycling the planned sections
+    while len(slots) < target:  # pad by cycling the planned sections
         slots.append(base[i % len(base)])
         i += 1
     slots = slots[:target]
@@ -110,14 +117,17 @@ def _batch_prompt(subject: str, body: AIPaperRequest, slots: list, already: List
         "Rules: exactly four options, only one is correct, all four are different and believable. "
         "Do not put A) B) labels inside the option text. correct_option is one letter: A, B, C or D, and the correct "
         "answers should be spread over A-D. solution is 1-3 sentences explaining why the answer is right. "
-        "easy = recall, medium = apply, hard = multi-step reasoning. Questions must be self-contained and unambiguous.\n"
+        "easy = recall, medium = apply, hard = multi-step reasoning. Questions must "
+        "be self-contained and unambiguous.\n"
         'Reply with JSON exactly like: {"questions": [{"topic": "...", "difficulty": "easy", "question": "...", '
         '"option_a": "...", "option_b": "...", "option_c": "...", "option_d": "...", "correct_option": "B", '
         '"solution": "..."}]}'
     )
 
 
-def write_questions(body: AIPaperRequest, plan: dict, slots: list, cfg: AISettings) -> Tuple[List[dict], int, List[str]]:
+def write_questions(
+    body: AIPaperRequest, plan: dict, slots: list, cfg: AISettings
+) -> Tuple[List[dict], int, List[str]]:
     """Returns (valid rows, skipped count, warnings)."""
     subject = plan["subject"]
     rows: List[dict] = []
@@ -125,14 +135,19 @@ def write_questions(body: AIPaperRequest, plan: dict, slots: list, cfg: AISettin
     target = len(slots)
     batch_size = max(1, cfg.AI_BATCH_SIZE)
     queue = list(slots)
-    rounds_left = 2          # extra attempts to top up after bad/missing questions
+    rounds_left = 2  # extra attempts to top up after bad/missing questions
 
     while queue:
         batch, queue = queue[:batch_size], queue[batch_size:]
         try:
-            data = _chat([{"role": "system", "content": SYSTEM},
-                          {"role": "user", "content": _batch_prompt(subject, body, batch, [r["question"] for r in rows])}],
-                         cfg, 3500)
+            data = _chat(
+                [
+                    {"role": "system", "content": SYSTEM},
+                    {"role": "user", "content": _batch_prompt(subject, body, batch, [r["question"] for r in rows])},
+                ],
+                cfg,
+                3500,
+            )
         except GroqError as e:
             if not rows:
                 raise
@@ -166,7 +181,7 @@ def write_questions(body: AIPaperRequest, plan: dict, slots: list, cfg: AISettin
         missing = len(batch) - good
         if missing > 0 and rounds_left > 0 and len(rows) < target:
             rounds_left -= 1
-            queue = batch[good:] + queue        # ask again for what is still missing
+            queue = batch[good:] + queue  # ask again for what is still missing
 
     if len(rows) < target:
         warnings.append(f"The AI could only write {len(rows)} valid question(s) of the {target} planned.")
@@ -177,9 +192,12 @@ def write_questions(body: AIPaperRequest, plan: dict, slots: list, cfg: AISettin
 def save_paper(db: Session, user: User, body: AIPaperRequest, plan: dict, rows: List[dict]) -> ExamPaper:
     org_id = org_scope(user)
     hashes = {question_hash(r["subject"], r["topic"], r["question"]): r for r in rows}
-    mine = (db.query(Question).filter(same_org(Question, org_id), Question.created_by == user.id,
-                                      Question.content_hash.in_(list(hashes))).all())
-    existing = {q.content_hash: q for q in mine}          # already in this examiner's bank: reuse, never duplicate
+    mine = (
+        db.query(Question)
+        .filter(same_org(Question, org_id), Question.created_by == user.id, Question.content_hash.in_(list(hashes)))
+        .all()
+    )
+    existing = {q.content_hash: q for q in mine}  # already in this examiner's bank: reuse, never duplicate
 
     ordered: List[Question] = []
     for h, r in hashes.items():
@@ -199,12 +217,18 @@ def save_paper(db: Session, user: User, body: AIPaperRequest, plan: dict, rows: 
         except (TypeError, ValueError):
             duration = 0
         duration = duration if 1 <= duration <= 600 else min(600, max(5, len(ordered) * 2))
-    paper = ExamPaper(title=title, instructions=_clean(plan.get("instructions"), 2000) or None,
-                      duration_minutes=duration, organization_id=org_id)
+    paper = ExamPaper(
+        title=title,
+        instructions=_clean(plan.get("instructions"), 2000) or None,
+        duration_minutes=duration,
+        organization_id=org_id,
+    )
     db.add(paper)
     db.flush()
-    db.add_all(ExamPaperItem(paper_id=paper.id, question_id=q.id, position=n, marks=body.marks_each)
-               for n, q in enumerate(ordered, 1))
+    db.add_all(
+        ExamPaperItem(paper_id=paper.id, question_id=q.id, position=n, marks=body.marks_each)
+        for n, q in enumerate(ordered, 1)
+    )
     db.commit()
     db.refresh(paper)
     return paper
