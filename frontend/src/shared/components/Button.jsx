@@ -26,9 +26,9 @@ export default function Button({
   };
 
   const variants = {
-    primary: { backgroundColor: "#4F46E5", color: "#fff" },
-    secondary: { backgroundColor: "#E5E7EB", color: "#111827" },
-    danger: { backgroundColor: "#DC2626", color: "#fff" },
+    primary: { backgroundColor: "#e36a12", color: "#fff" },
+    secondary: { backgroundColor: "#ffffff", color: "#1c2430", border: "1px solid #cfd6de" },
+    danger: { backgroundColor: "#b42318", color: "#fff" },
   };
 
   return (

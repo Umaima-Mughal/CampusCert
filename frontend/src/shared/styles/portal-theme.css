@@ -12,16 +12,16 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --cc-navy:      #1e3a5f;
-  --cc-navy-dark: #142a45;
-  --cc-red:       #c0392b;
-  --cc-red-dark:  #a93226;
-  --cc-blue-link: #2563eb;
-  --cc-green:     #16a34a;
+  --cc-navy:      #1c2430;
+  --cc-navy-dark: #151b24;
+  --cc-red:       #e36a12;
+  --cc-red-dark:  #c4550a;
+  --cc-blue-link: #c4550a;
+  --cc-green:     #1f7a4d;
 
-  --cc-bg-page:   #f1f5f9;
+  --cc-bg-page:   #f4f6f8;
   --cc-bg-card:   #ffffff;
-  --cc-bg-field:  #f8fafc;
+  --cc-bg-field:  #fafbfc;
 
   --cc-border:      #d8dee6;
   --cc-text-primary:   #1f2937;

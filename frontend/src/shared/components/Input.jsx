@@ -24,7 +24,7 @@ export default function Input({
             marginBottom: "6px",
             fontSize: "13px",
             fontWeight: 600,
-            color: "#374151",
+            color: "#1c2430",
           }}
         >
           {label}
@@ -40,13 +40,13 @@ export default function Input({
           width: "100%",
           padding: "10px 12px",
           borderRadius: "8px",
-          border: error ? "1px solid #DC2626" : "1px solid #D1D5DB",
+          border: error ? "1px solid #b42318" : "1px solid #cfd6de",
           fontSize: "14px",
           boxSizing: "border-box",
         }}
       />
       {error && (
-        <p style={{ color: "#DC2626", fontSize: "12px", marginTop: "4px" }}>
+        <p style={{ color: "#b42318", fontSize: "12px", marginTop: "4px" }}>
           {error}
         </p>
       )}

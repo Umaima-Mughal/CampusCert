@@ -15,7 +15,7 @@ export default function Layout({ children }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#F3F4F6",
+        backgroundColor: "#f4f6f8",
         fontFamily:
           "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       }}

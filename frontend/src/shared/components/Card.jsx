@@ -13,9 +13,10 @@ export default function Card({ children, maxWidth = "400px" }) {
         width: "100%",
         margin: "0 auto",
         padding: "32px",
-        borderRadius: "12px",
+        borderRadius: "8px",
         backgroundColor: "#fff",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)",
+        border: "1px solid #e3e7ec",
+        boxShadow: "0 1px 2px rgba(28,36,48,0.04)",
         boxSizing: "border-box",
       }}
     >

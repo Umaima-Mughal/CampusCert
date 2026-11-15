@@ -155,20 +155,20 @@ function ExaminerQuestionBank() {
       {user.role === "examiner" && (
         <div
           style={{
-            backgroundColor: "#0b1220",
+            backgroundColor: "#ffffff",
             padding: "16px 24px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             gap: "12px",
             flexWrap: "wrap",
-            borderBottom: "1px solid #334155",
+            borderBottom: "3px solid #e36a12",
           }}
         >
           <div>
             <strong
               style={{
-                color: "#ffffff",
+                color: "#1c2430",
                 fontSize: "18px",
               }}
             >
@@ -177,7 +177,7 @@ function ExaminerQuestionBank() {
 
             <p
               style={{
-                color: "#94a3b8",
+                color: "#5c6773",
                 margin: "4px 0 0",
                 fontSize: "13px",
               }}
@@ -189,10 +189,10 @@ function ExaminerQuestionBank() {
           <Link
             to="/examiner/security"
             style={{
-              backgroundColor: "#2563eb",
+              backgroundColor: "#e36a12",
               color: "#ffffff",
-              padding: "12px 18px",
-              borderRadius: "8px",
+              padding: "10px 16px",
+              borderRadius: "6px",
               textDecoration: "none",
               fontWeight: "600",
               display: "inline-block",
@@ -242,8 +242,8 @@ function HomePage() {
       style={{
         padding: "40px",
         textAlign: "center",
-        color: "#fff",
-        background: "#030712",
+        color: "#1c2430",
+        background: "#f4f6f8",
         minHeight: "100vh",
       }}
     >

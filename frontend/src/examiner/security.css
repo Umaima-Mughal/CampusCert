@@ -1,12 +1,11 @@
-
 .sec-page {
   min-height: 100vh;
-  background: #08111f;
-  color: #e8effb;
-  font-family: Inter, system-ui, sans-serif;
-  padding: 32px 18px;
+  background: #f4f6f8;
+  color: #1c2430;
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
+  padding: 28px 18px 40px;
 }
-.sec-shell { max-width: 1320px; margin: auto; }
+.sec-shell { max-width: 1200px; margin: auto; }
 .sec-header, .sec-toolbar, .sec-panel-head {
   display: flex;
   justify-content: space-between;
@@ -14,116 +13,81 @@
   gap: 18px;
   flex-wrap: wrap;
 }
-.sec-header { margin-bottom: 28px; }
-.sec-header h1 { font-size: 32px; margin: 8px 0; }
-.sec-header p, .sec-panel p, .sec-muted {
-  color: #9fb0c9;
-}
+.sec-header { margin-bottom: 22px; }
+.sec-header h1 { font-size: 26px; margin: 6px 0; color: #1c2430; font-weight: 700; }
+.sec-header p, .sec-panel p, .sec-muted { color: #5c6773; }
 .sec-eyebrow {
-  color: #57d8b0;
+  color: #c4550a;
   font-size: 12px;
-  font-weight: 750;
-  letter-spacing: 2px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
-.sec-link { color: #80d5f5; }
+.sec-link { color: #c4550a; font-weight: 600; }
 .sec-toolbar, .sec-panel, .sec-metric {
-  border: 1px solid #26384f;
-  background: #111e30;
-  border-radius: 16px;
+  border: 1px solid #e3e7ec;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(28, 36, 48, 0.04);
 }
-.sec-toolbar { padding: 18px; margin-bottom: 20px; }
-.sec-toolbar select {
-  min-width: 230px;
-  flex: 1;
-}
+.sec-toolbar { padding: 16px; margin-bottom: 18px; }
+.sec-toolbar select { min-width: 220px; flex: 1; }
 .sec-page button, .sec-page select {
-  padding: 11px 15px;
-  border: 1px solid #3b5069;
-  border-radius: 9px;
-  background: #1b3049;
-  color: white;
+  padding: 10px 14px;
+  border: 1px solid #cfd6de;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1c2430;
   cursor: pointer;
+  font-family: inherit;
 }
-.sec-page button:hover { background: #294765; }
-.sec-page button:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-}
+.sec-page button:hover { background: #fff4eb; border-color: #f0d2b8; }
+.sec-page button:disabled { opacity: .5; cursor: not-allowed; }
 .sec-stats {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
-.sec-metric { padding: 20px; }
-.sec-metric span {
-  display: block;
-  color: #9fb0c9;
-  font-size: 13px;
-}
-.sec-metric strong {
-  display: block;
-  margin-top: 8px;
-  font-size: 32px;
-}
-.sec-panel { padding: 22px; margin-bottom: 20px; }
-.sec-panel h2 { margin: 0; }
-.sec-panel h3 { margin-top: 24px; }
+.sec-metric { padding: 18px; border-top: 3px solid #e36a12; }
+.sec-metric span { display: block; color: #5c6773; font-size: 13px; }
+.sec-metric strong { display: block; margin-top: 8px; font-size: 28px; color: #1c2430; }
+.sec-panel { padding: 22px; margin-bottom: 18px; }
+.sec-panel h2 { margin: 0; color: #1c2430; font-size: 18px; }
+.sec-panel h3 { margin-top: 24px; color: #1c2430; }
 .sec-pill, .sec-risk {
-  padding: 7px 11px;
-  border-radius: 20px;
+  padding: 4px 8px;
+  border-radius: 4px;
   font-size: 12px;
   font-weight: 700;
-  background: #28435a;
+  background: #eef1f4;
+  color: #3d4854;
 }
-.sec-risk.high { background: #75343e; }
-.sec-risk.medium { background: #775b24; }
-.sec-risk.low { background: #235f52; }
+.sec-risk.high { background: #fdecec; color: #b42318; }
+.sec-risk.medium { background: #fff6e0; color: #9a6700; }
+.sec-risk.low { background: #e8f6ee; color: #1f7a4d; }
 .sec-table-wrap { overflow-x: auto; }
-.sec-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  text-align: left;
-}
-.sec-table th, .sec-table td {
-  padding: 15px 12px;
-  border-bottom: 1px solid #283b53;
-}
-.sec-table th {
-  font-size: 12px;
-  color: #9fb0c9;
-}
-.sec-table td small {
-  display: block;
-  color: #9fb0c9;
-  margin-top: 5px;
-}
-.sec-empty { text-align: center; padding: 35px !important; }
-.sec-timeline { padding-left: 23px; }
-.sec-timeline li { margin: 14px 0; }
-.sec-timeline span {
-  display: block;
-  font-size: 12px;
-  color: #9fb0c9;
-}
-.sec-actions { display: flex; gap: 12px; margin-top: 24px; }
-.sec-page .sec-resume { background: #146a54; }
-.sec-page .sec-terminate { background: #923542; }
-.sec-error, .sec-notice {
-  padding: 14px;
-  border-radius: 10px;
-  margin-bottom: 16px;
-}
-.sec-error { background: #63303a; }
-.sec-notice { background: #1d5346; }
-.sec-footer {
-  color: #9fb0c9;
-  font-size: 12px;
-  text-align: center;
-  padding: 20px;
-}
-@media (max-width: 850px) {
+.sec-table { width: 100%; border-collapse: collapse; margin-top: 16px; text-align: left; min-width: 640px; }
+.sec-table th, .sec-table td { padding: 12px; border-bottom: 1px solid #e8edf2; }
+.sec-table th { font-size: 12px; color: #5c6773; text-transform: uppercase; letter-spacing: 0.03em; }
+.sec-table td small { display: block; color: #5c6773; margin-top: 4px; }
+.sec-empty { text-align: center; padding: 32px !important; color: #5c6773; }
+.sec-timeline { padding-left: 20px; color: #1c2430; }
+.sec-timeline li { margin: 12px 0; }
+.sec-timeline span { display: block; font-size: 12px; color: #5c6773; }
+.sec-actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+.sec-page .sec-resume { background: #1f7a4d; color: #fff; border-color: #1f7a4d; }
+.sec-page .sec-terminate { background: #b42318; color: #fff; border-color: #b42318; }
+.sec-error, .sec-notice { padding: 12px 14px; border-radius: 6px; margin-bottom: 16px; }
+.sec-error { background: #fdecec; color: #b42318; border: 1px solid #f3c7c3; }
+.sec-notice { background: #e8f6ee; color: #1f7a4d; border: 1px solid #b7e0c8; }
+.sec-footer { color: #5c6773; font-size: 12px; text-align: center; padding: 20px; }
+@media (max-width: 900px) {
   .sec-stats { grid-template-columns: repeat(2, 1fr); }
-  .sec-header h1 { font-size: 25px; }
+  .sec-header h1 { font-size: 22px; }
+}
+@media (max-width: 520px) {
+  .sec-page { padding: 16px 12px 32px; }
+  .sec-stats { grid-template-columns: 1fr; }
+  .sec-toolbar select { min-width: 0; width: 100%; }
 }
