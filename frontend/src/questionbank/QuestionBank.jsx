@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { bulkDeleteQuestions, deleteQuestion, getFilterOptions, importQuestions, listQuestions } from "../api/questionsApi";
+import AiPaperGenerator from "./AiPaperGenerator";
 import ErrorBoundary from "./ErrorBoundary";
 import McqBlock from "./McqBlock";
 import PaperEditor from "./PaperEditor";
@@ -37,7 +38,7 @@ function QuestionBankInner() {
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const fileRef = useRef(null);
-  const [tab, setTab] = useState(paperFromUrl ? "papers" : "bank");            // bank | generate | papers
+  const [tab, setTab] = useState(paperFromUrl ? "papers" : "bank");            // bank | generate | ai | papers
   const [basket, setBasket] = useState({});          // questions ticked for a new paper: { id: question }
   const [draft, setDraft] = useState(null);          // items for the paper editor, or null
   const [focusPaperId, setFocusPaperId] = useState(paperFromUrl);
@@ -179,10 +180,12 @@ function QuestionBankInner() {
       <nav className="qb-tabs qb-noprint" role="tablist" aria-label="Question bank sections">
         <button role="tab" aria-selected={tab === "bank"} onClick={() => setTab("bank")}>Question bank</button>
         <button role="tab" aria-selected={tab === "generate"} onClick={() => setTab("generate")}>Generate paper</button>
+        <button role="tab" aria-selected={tab === "ai"} onClick={() => setTab("ai")}>AI paper</button>
         <button role="tab" aria-selected={tab === "papers"} onClick={() => { setFocusPaperId(null); setTab("papers"); }}>Exam papers</button>
       </nav>
 
       {tab === "generate" && <PaperGenerator onCreated={showPaper} />}
+      {tab === "ai" && <AiPaperGenerator onCreated={showPaper} />}
       {tab === "papers" && <PapersView key={focusPaperId || "list"} focusId={focusPaperId} />}
 
       {tab === "bank" && (<>

@@ -53,3 +53,6 @@ app.include_router(attempts_router)
 app.include_router(results_router)
 app.include_router(security_router)
 app.include_router(analytics_router)
+
+from app.ai.routes import router as ai_router  # noqa: E402
+app.include_router(ai_router, prefix="/api/v1")
