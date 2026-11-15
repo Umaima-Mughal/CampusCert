@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchAttempt, saveAnswer, submitAttempt } from "../api/attempts";
+import nedLogo from "./ned-logo.png";
 import {
   formatClock,
   isNetworkError,
@@ -562,8 +563,9 @@ export default function ExamPage() {
               className="st-btn secondary"
               onClick={enterFullscreenForTest}
               style={{
-                backgroundColor: "#2563eb",
-                color: "#ffffff",
+                backgroundColor: "#ffffff",
+                color: "#1c2430",
+                border: "1px solid #cfd6de",
               }}
             >
               Test Fullscreen
@@ -590,6 +592,19 @@ export default function ExamPage() {
 
       <div className="st-exam-body">
         <section className="st-question">
+          <div className="st-paper-head">
+          <img
+  src={nedLogo}
+  alt="NED University Logo"
+  className="st-paper-logo"
+/>
+            <div>
+              <p className="st-paper-uni">NED UNIVERSITY OF ENGINEERING AND TECHNOLOGY</p>
+              <p className="st-paper-kind">OFFICIAL EXAMINATION PAPER</p>
+            </div>
+          </div>
+          <div className="st-paper-rule" aria-hidden="true" />
+
           <div className="st-question-meta">
             <span>
               Question {current + 1}

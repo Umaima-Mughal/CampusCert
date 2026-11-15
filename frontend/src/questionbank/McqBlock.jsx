@@ -18,7 +18,7 @@ export default function McqBlock({ q, showAnswer = false }) {
           return (
             <li
               key={LETTERS[i]}
-              style={{ display: "flex", gap: 8, color: right ? "#34d399" : "inherit", fontWeight: right ? 600 : 400 }}
+              style={{ display: "flex", gap: 8, color: right ? "#1f7a4d" : "inherit", fontWeight: right ? 600 : 400 }}
             >
               <span style={{ minWidth: 18 }}>{LETTERS[i]}.</span>
               <span>{text}{right ? "  ✓ correct" : ""}</span>

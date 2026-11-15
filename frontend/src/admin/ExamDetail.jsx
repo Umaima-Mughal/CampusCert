@@ -306,17 +306,20 @@ export default function ExamDetail() {
         {exam.status !== "ARCHIVED" && (
           <form className="admin-actions" onSubmit={handleAssign} style={{ marginBottom: 16 }}>
             <select
-              value={selected}
-              onChange={(e) => setSelected(e.target.value)}
-              style={{
-                minWidth: 260,
-                padding: "10px 12px",
-                borderRadius: 11,
-                border: "1px solid rgba(255,255,255,0.09)",
-                background: "rgba(255,255,255,0.045)",
-                color: "#fff",
-              }}
-            >
+  value={selected}
+  onChange={(e) => setSelected(e.target.value)}
+  style={{
+    minWidth: 260,
+    padding: "10px 12px",
+    borderRadius: 11,
+    border: "1px solid #cfd6de",
+    backgroundColor: "#ffffff",
+    color: "#1c2430",
+    colorScheme: "light",
+    fontSize: 14,
+    cursor: "pointer",
+  }}
+>
               <option value="">Select a student</option>
               {available.map((student) => (
                 <option key={student.id} value={student.id}>

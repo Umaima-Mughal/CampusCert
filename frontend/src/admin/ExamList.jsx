@@ -54,13 +54,16 @@ export default function ExamList() {
               setStatus(value);
               load(value);
             }}
-            style={{
-              padding: "10px 12px",
-              borderRadius: 11,
-              border: "1px solid rgba(255,255,255,0.09)",
-              background: "rgba(255,255,255,0.045)",
-              color: "#fff",
-            }}
+           style={{
+  padding: "10px 12px",
+  borderRadius: 11,
+  border: "1px solid #cfd6de",
+  backgroundColor: "#ffffff",
+  color: "#1c2430",
+  colorScheme: "light",
+  fontSize: 14,
+  cursor: "pointer",
+}}
           >
             <option value="">All statuses</option>
             {EXAM_STATUSES.map((item) => (
