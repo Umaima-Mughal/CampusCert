@@ -103,6 +103,7 @@ import { AuthProvider, useAuth } from "./auth/AuthContext";
 import AuthPage from "./auth/AuthPage";
 import AdminRoutes from "./admin/AdminRoutes";
 import SecurityControlRoom from "./examiner/SecurityControlRoom";
+import ExaminerResults from "./examiner/ExaminerResults";
 import StudentRoutes from "./student/StudentRoutes";
 
 const ADMIN_ROLES = ["admin", "super_admin"];
@@ -186,20 +187,37 @@ function ExaminerQuestionBank() {
             </p>
           </div>
 
-          <Link
-            to="/examiner/security"
-            style={{
-              backgroundColor: "#e36a12",
-              color: "#ffffff",
-              padding: "10px 16px",
-              borderRadius: "6px",
-              textDecoration: "none",
-              fontWeight: "600",
-              display: "inline-block",
-            }}
-          >
-            🛡️ Open Security Control Room
-          </Link>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <Link
+              to="/examiner/results"
+              style={{
+                backgroundColor: "#1c2430",
+                color: "#ffffff",
+                padding: "10px 16px",
+                borderRadius: "6px",
+                textDecoration: "none",
+                fontWeight: "600",
+                display: "inline-block",
+              }}
+            >
+              📊 View Student Marks
+            </Link>
+
+            <Link
+              to="/examiner/security"
+              style={{
+                backgroundColor: "#e36a12",
+                color: "#ffffff",
+                padding: "10px 16px",
+                borderRadius: "6px",
+                textDecoration: "none",
+                fontWeight: "600",
+                display: "inline-block",
+              }}
+            >
+              🛡️ Open Security Control Room
+            </Link>
+          </div>
         </div>
       )}
 
@@ -292,6 +310,11 @@ export default function App() {
           <Route
             path="/examiner/security"
             element={<SecurityControlRoom />}
+          />
+
+          <Route
+            path="/examiner/results"
+            element={<ExaminerResults />}
           />
 
           <Route

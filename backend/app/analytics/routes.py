@@ -11,6 +11,7 @@ from app.core.database import get_db
 from app.exams.models import Exam
 from app.attempts.models import ExamAttempt, AnswerLog
 from app.security.models import ExamEvent
+from app.grading.models import Result
 from collections import defaultdict
 from app.auth.models import User as SecurityUser
 
@@ -233,3 +234,44 @@ def security_review_queue(
         "items": items,
         "total": len(items),
     }
+
+
+# --- Examiner side: student marks for an exam ---
+
+
+@router.get("/exams/{exam_id}/results")
+def exam_student_results(
+    exam_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user: User = Depends(staff_only),
+):
+    get_authorized_exam(db, user, exam_id)
+
+    rows = (
+        db.query(ExamAttempt, SecurityUser, Result)
+        .join(SecurityUser, SecurityUser.id == ExamAttempt.candidate_id)
+        .outerjoin(Result, Result.attempt_id == ExamAttempt.id)
+        .filter(ExamAttempt.exam_id == exam_id)
+        .order_by(SecurityUser.full_name.asc(), ExamAttempt.attempt_number.asc())
+        .all()
+    )
+
+    items = []
+    for attempt, candidate, result in rows:
+        items.append(
+            {
+                "attempt_id": attempt.id,
+                "candidate_id": candidate.id,
+                "candidate_name": candidate.full_name,
+                "candidate_email": candidate.email,
+                "attempt_number": attempt.attempt_number,
+                "status": attempt.status,
+                "submitted_at": attempt.submitted_at,
+                "obtained_marks": result.obtained_marks if result else None,
+                "total_marks": result.total_marks if result else None,
+                "percentage": result.percentage if result else None,
+                "passed": result.passed if result else None,
+            }
+        )
+
+    return {"items": items, "total": len(items)}
