@@ -17,12 +17,13 @@ export default function AdminDashboard() {
   if (!ADMIN_ROLES.includes(user.role)) {
     return <Navigate to="/" replace />;
   }
-
-  const title = location.pathname.includes("/exams/")
-    ? "Exam"
-    : location.pathname.includes("/exams")
-      ? "Exam management"
-      : "Admin overview";
+    const title = location.pathname.includes("/results")
+    ? "Student results"
+    : location.pathname.includes("/exams/")
+      ? "Exam"
+      : location.pathname.includes("/exams")
+        ? "Exam management"
+        : "Admin overview";
 
   return (
     <div className="admin-shell">
@@ -42,6 +43,7 @@ export default function AdminDashboard() {
           <NavLink to="/admin/exams" end>Exams</NavLink>
           <NavLink to="/admin/exams/new">Create exam</NavLink>
           <NavLink to="/admin/papers">Exam papers</NavLink>
+          <NavLink to="/admin/results">Student results</NavLink>
         </nav>
       </aside>
       <div className="admin-main">
