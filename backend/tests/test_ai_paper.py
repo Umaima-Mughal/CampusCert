@@ -142,6 +142,8 @@ def test_nothing_usable_raises(db, examiner, monkeypatch):
 
 # ---------------------------------------------------------------- Groq client (fake HTTP)
 def cfg(**kw):
+    kw.setdefault("GROQ_MODEL", "llama-3.3-70b-versatile")
+    kw.setdefault("GROQ_FALLBACK_MODEL", "llama-3.1-8b-instant")
     return AISettings(GROQ_API_KEY="gsk_test", **kw)
 
 
